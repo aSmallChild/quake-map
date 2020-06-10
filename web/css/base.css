@@ -1,0 +1,97 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+@keyframes shrink_in {
+    0% {
+        font-size: 24px;
+    }
+    100% {
+        font-size: initial;
+    }
+}
+
+@keyframes shrink_out {
+    0% {
+        font-size: initial;
+    }
+    100% {
+        font-size: 1px;
+    }
+}
+
+#map {
+    height: 100%;
+}
+
+#stats_container {
+    left: 0;
+}
+
+#quake_info_container {
+    right: 0;
+    width: 275px;
+    overflow: hidden;
+}
+
+#stats_container, #quake_info_container {
+    top: 0;
+    position: absolute;
+    display: inline-block;
+    z-index: 1;
+    margin: 10px;
+}
+
+.quake_info, .disclaimer {
+    background: #eee;
+    border: solid 1px #777;
+    padding: 5px 10px;
+    margin: 2px;
+}
+
+.selected_quake {
+    border-style: dashed;
+}
+
+a, .quake_field {
+    color: #777;
+}
+
+.quake_field span, .quake_field a {
+    font-weight: bold;
+    color: #000;
+    text-decoration: none;
+}
+
+.disclaimer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    z-index: 1;
+    margin: 10px;
+}
+
+.shrink_in {
+    animation-iteration-count: 1;
+    animation-name: shrink_in;
+    animation-duration: .1s;
+}
+
+.shrink_out {
+    animation-iteration-count: 1;
+    animation-name: shrink_out;
+    animation-duration: .07s;
+    font-size: 1px;
+}
+
+.close {
+    cursor: pointer;
+    width: 25px;
+    height: 30px;
+    text-align: right;
+    position: absolute;
+    right: 10px;
+}

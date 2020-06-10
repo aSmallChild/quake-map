@@ -1,0 +1,12 @@
+<div class="disclaimer" style="display: none;">
+    Data is provided by
+    <a href="https://geonet.org.nz">Geonet</a> &amp;
+    <a href="https://gns.cri.nz">GNS Science</a> under the Creative Commons license
+</div>
+<script>
+    const disclaimer = document.querySelector('.disclaimer');
+    setTimeout(() => {
+        Util.shrinkIn(disclaimer);
+        setTimeout(() => Util.shrinkOut(disclaimer), 15000);
+    }, 5000);
+</script>

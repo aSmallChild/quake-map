@@ -1,0 +1,18 @@
+This is Docker Ready...
+
+Steps:
+1) Go into the directory where the Dockerfile is (this one)
+2) Run "sudo docker build -t quakemap ."
+
+Now, you'll need to start this.
+1) sudo docker images
+2) sudo docker run --restart unless-stopped -p 49160:8000 -d quakemap
+
+The server will start on port 49160 of the host.
+
+For logs:
+1) docker ps (and grab the ID)
+2) docker logs <id>
+
+To go inside the container:
+1) docker exec -it <id> /bin/bash

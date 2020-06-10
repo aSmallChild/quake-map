@@ -1,0 +1,11 @@
+{
+  "google_maps_key": "",
+  "min_magnitude": 3,
+  "max_depth_km": 250,
+  "quake_cache_ttl_days": 1,
+  "geonet_polling_interval_seconds": 30,
+  "full_refresh_interval_minutes": 45,
+  "recent_quake_poll_time_minutes": 30,
+  "quake_search_time_minutes": 2,
+  "http_port": 8000
+}
