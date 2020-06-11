@@ -20,8 +20,7 @@ class QuakeMap {
     bindSocketEvents(socket) {
         socket.on('all_quakes', allQuakes => {
             for (const id in this.quakes) {
-                const quake = this.quakes[id];
-                this.removeQuake(quake, false);
+                this.removeQuake(this.quakes[id], false);
             }
 
             for (const id in allQuakes) {
@@ -119,7 +118,7 @@ class QuakeMap {
 
     addQuake(quake) {
         if (this.quakes.hasOwnProperty(quake.id)) {
-            this.removeQuake(quake, false);
+            this.removeQuake(this.quakes[quake.id], false);
         }
 
         const quakeTime = Date.parse(quake.time);

@@ -3,6 +3,7 @@ const server = require('express')();
 // noinspection JSValidateTypes
 const http = require('http').Server(server);
 const io = require('socket.io')(http);
+const QuakeService = require('./quake-service');
 const Geonet = require('./geonet');
 const sockets = require('./sockets');
 const routes = require('./routes');
@@ -20,7 +21,8 @@ for (const prop of ['google_maps_key', 'min_magnitude', 'max_depth_km', 'quake_c
 }
 
 const logger = console;
-const geonet = new Geonet(config, logger);
+const geonet = new Geonet(logger);
+const quakeService = new QuakeService(geonet, config, logger);
 const stats = {
     connected_clients: 0,
     peak_connected_clients: 0,
@@ -28,15 +30,15 @@ const stats = {
     peak_unique_connections: 0
 };
 
-sockets(io, geonet, stats, config, logger);
-routes(server, geonet, stats, config);
+sockets(io, quakeService, stats, config, logger);
+routes(server, quakeService, stats, config);
 
 http.listen(config.http_port, () => logger.log("Server listening on " + config.http_port + "."));
 
 // poll geonet
-geonet.queryAllQuakes();
-setInterval(() => geonet.queryAllQuakes(), config.full_refresh_interval_minutes * 60000);
+quakeService.queryAllQuakes();
+setInterval(() => quakeService.queryAllQuakes(), config.full_refresh_interval_minutes * 60000);
 setInterval(() => {
-    geonet.expireOldEarthquakes();
-    geonet.checkForNewQuakes();
+    quakeService.expireOldEarthquakes();
+    quakeService.checkForNewQuakes();
 }, config.geonet_polling_interval_seconds * 1000);
