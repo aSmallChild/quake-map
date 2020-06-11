@@ -1,5 +1,6 @@
 const request = require('request');
 const EventEmitter = require('events');
+const Quake = require('./quake');
 
 module.exports = class {
     constructor(config, logger) {
@@ -17,7 +18,6 @@ module.exports = class {
         this.urlQuakeSearch = 'https://quakesearch.geonet.org.nz/geojson';
         this.urlQuakePage = 'https://www.geonet.org.nz/earthquake/';
         this.urlQuakeQuery = 'https://api.geonet.org.nz/quake/';
-        this.quakeFields = ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
     }
 
     getAllQuakes() {
@@ -80,33 +80,22 @@ module.exports = class {
             const updatedQuakes = [];
 
             for (const feature of geonetResponse.features) {
-                /** @param feature.geometry */
-                /** @param earthquake.coordinates */
-                /** @param earthquake.publicid */
-                /** @param earthquake.magnitude */
-                /** @param earthquake.origintime */
-                /** @param earthquake.modificationtime */
-                const earthquake = feature.properties;
-                [earthquake.long, earthquake.lat] = feature.geometry.coordinates;
-                const quake = {
-                    id: earthquake.publicid,
-                    long: earthquake.long,
-                    lat: earthquake.lat,
-                    url: this.urlQuakePage + earthquake.publicid,
-                    mag: earthquake.magnitude,
-                    depth: earthquake.depth,
-                    time: earthquake.origintime,
-                    modified: earthquake.modificationtime,
-                    quality: null
-                };
+                /** @param feature.publicid */
+                /** @param feature.origintime */
+                /** @param feature.modificationtime */
+                const quake = new Quake(feature.properties.publicid);
+                quake.url = this.urlQuakePage + quake.id;
+                this.parseCommonFeatureFields(quake, feature);
+                quake.time = feature.properties.origintime;
+                quake.modified = feature.properties.modificationtime;
 
-                const existingQuake = this.cache.hasOwnProperty(quake.id) ? this.cache[quake.id] : null;
-                if (!existingQuake) {
+                const cachedQuake = this.cache.hasOwnProperty(quake.id) ? this.cache[quake.id] : null;
+                if (!cachedQuake) {
                     updatedQuakes.push(quake);
                     this.cacheQuake(quake);
-                } else if (this.hasQuakeChanged(existingQuake, quake)) {
-                    updatedQuakes.push(quake);
-                    this.updateQuakeFields(existingQuake, quake);
+                } else if (!cachedQuake.equals(quake)) {
+                    cachedQuake.update(quake);
+                    updatedQuakes.push(cachedQuake);
                 }
             }
             this.syncUpdatedQuakes(updatedQuakes);
@@ -151,9 +140,10 @@ module.exports = class {
             const geonetResponse = JSON.parse(body);
             const updatedQuakes = [];
             for (const feature of geonetResponse.features) {
-                const earthquake = feature.properties;
-                [earthquake.lat, earthquake.long] = feature.geometry.coordinates;
-                earthquake.mag = earthquake.magnitude;
+                const earthquake = new Quake(quake.id);
+                this.parseCommonFeatureFields(earthquake, feature);
+                earthquake.time = feature.properties.time;
+                earthquake.quality = feature.properties.quality;
 
                 if (earthquake.quality == 'deleted') {
                     this.logger.log(`Earthquake was deleted ${quake.id}`);
@@ -161,11 +151,11 @@ module.exports = class {
                     this.stopPollingQuake(quake);
                     this.syncRemovedQuakes([quake.id]);
                     return;
-                } else if (this.hasQuakeChanged(quake, earthquake)) {
+                } else if (!quake.equals(earthquake)) {
                     updatedQuakes.push(quake);
                 }
 
-                this.updateQuakeFields(quake, earthquake);
+                quake.update(earthquake);
 
                 if (quake.quality == 'best') {
                     this.stopPollingQuake(quake);
@@ -175,28 +165,20 @@ module.exports = class {
         });
     }
 
+    parseCommonFeatureFields(quake, feature) {
+        /** @param feature.geometry.coordinates */
+        /** @param feature.magnitude */
+        [quake.long, quake.lat] = feature.geometry.coordinates;
+        quake.mag = feature.properties.magnitude;
+        quake.depth = feature.properties.depth;
+    }
+
     cacheQuake(quake) {
         this.cache[quake.id] = quake;
     }
 
     uncacheQuake(quake) {
         delete this.cache[quake.id];
-    }
-
-    hasQuakeChanged(cached, updated) {
-        for (const field of this.quakeFields) {
-            const value = updated.hasOwnProperty(field) ? updated[field] : cached[field];
-            if (cached[field] != value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    updateQuakeFields(cached, updated) {
-        for (const field of this.quakeFields) {
-            cached[field] = updated.hasOwnProperty(field) ? updated[field] : cached[field];
-        }
     }
 
     stopPollingQuake(quake) {

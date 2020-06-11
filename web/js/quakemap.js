@@ -227,7 +227,7 @@ class QuakeMap {
                 }
             }
         });
-        quake.infoDiv.addEventListener('mouseout', this.showAllMarkers);
+        quake.infoDiv.addEventListener('mouseout', () => this.showAllMarkers());
         quake.infoDiv.addEventListener('click', () => this.map.panTo(quake.marker.getPosition()));
 
         return true;
