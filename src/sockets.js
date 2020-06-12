@@ -1,5 +1,8 @@
+import socketIo from 'socket.io';
+
 // syncs earthquake data with clients
-module.exports = (io, geonet, stats, config, logger) => {
+export default (server, geonet, stats, config, logger) => {
+    const io = socketIo(server);
     const ips = {};
     const clientConfig = {
         min_magnitude: config.min_magnitude,

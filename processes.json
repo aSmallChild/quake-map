@@ -1,7 +1,0 @@
-{
-	"name": "quakemap",
-	"script": "server.js",
-	"watch": "session",
-	"instances": "max",
-	"exec_mode": "cluster"
-}

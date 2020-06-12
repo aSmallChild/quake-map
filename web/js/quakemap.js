@@ -1,4 +1,6 @@
-class QuakeMap {
+import Util from "./util.js";
+
+export default class QuakeMap {
     constructor(map, socket, quakeInfoContainer, statsContainer) {
         this.map = map;
         this.quakeInfoContainer = quakeInfoContainer;

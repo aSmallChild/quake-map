@@ -1,6 +1,6 @@
-const EventEmitter = require('events');
+import EventEmitter from 'events';
 
-module.exports = class {
+export default class QuakeService {
     constructor(geonet, config, logger) {
         this.config = config;
         this.geonet = geonet;
@@ -52,7 +52,7 @@ module.exports = class {
 
         // check if earthquake has expired
         if (!this.cache.hasOwnProperty(quake.id)) {
-            this.stopPollingQuake(quake);
+            this.stopPollingQuake(quake, 'Expired.');
             return;
         }
 
@@ -63,9 +63,8 @@ module.exports = class {
         }
 
         if (earthquake.quality == 'deleted') {
-            this.logger.log(`Earthquake was deleted ${quake.id}`);
             this.uncacheQuake(quake);
-            this.stopPollingQuake(quake);
+            this.stopPollingQuake(quake, 'Earthquake was deleted.');
             this.syncRemovedQuakes([quake.id]);
             return;
         } else if (!quake.equals(earthquake)) {
@@ -74,7 +73,7 @@ module.exports = class {
         }
 
         if (quake.quality == 'best') {
-            this.stopPollingQuake(quake);
+            this.stopPollingQuake(quake, 'Best quality/reviewed.');
         }
     }
 
@@ -86,10 +85,10 @@ module.exports = class {
         delete this.cache[quake.id];
     }
 
-    stopPollingQuake(quake) {
+    stopPollingQuake(quake, reason) {
         if (this.recentQuakes.hasOwnProperty(quake.id)) {
             delete this.recentQuakes[quake.id];
-            this.logger.log("Stopped polling quake " + quake.id);
+            this.logger.log(`Stopped polling quake ${quake.id}: ${reason}`);
             return true;
         }
         return false;
@@ -97,13 +96,10 @@ module.exports = class {
 
     refreshRecentQuakes() {
         const recentPeriod = Date.now() - this.config.recent_quake_poll_time_minutes * 60000;
-        const quakesToSync = [];
         for (const id in this.cache) {
             const quake = this.cache[id];
             if (Date.parse(quake.time) < recentPeriod) {
-                if (this.stopPollingQuake(quake)) {
-                    quakesToSync.push(quake);
-                }
+                this.stopPollingQuake(quake, 'Outside polling period.');
             } else if (quake.quality !== 'best' && quake.quality !== 'deleted') {
                 // only poll quakes that have not been reviewed
                 // best/deleted means quake has been reviewed
@@ -111,7 +107,6 @@ module.exports = class {
                 this.recentQuakes[quake.id] = quake;
             }
         }
-        this.syncUpdatedQuakes(quakesToSync);
 
         for (const id in this.recentQuakes) {
             this.refreshQuake(this.recentQuakes[id]);

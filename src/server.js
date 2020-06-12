@@ -1,12 +1,11 @@
-const fs = require('fs');
-const server = require('express')();
-// noinspection JSValidateTypes
-const http = require('http').Server(server);
-const io = require('socket.io')(http);
-const QuakeService = require('./quake-service');
-const Geonet = require('./geonet');
-const sockets = require('./sockets');
-const routes = require('./routes');
+import fs from 'fs';
+import express from 'express';
+import http from 'http';
+
+import QuakeService from './quake-service.js';
+import Geonet from './geonet.js';
+import sockets from './sockets.js';
+import routes from './routes.js';
 
 /** @param config.quake_search_time_minutes */
 /** @param config.quake_cache_ttl_days */
@@ -21,6 +20,9 @@ for (const prop of ['google_maps_key', 'min_magnitude', 'max_depth_km', 'quake_c
 }
 
 const logger = console;
+const app = express();
+// noinspection JSValidateTypes
+const server = http.Server(app);
 const geonet = new Geonet(logger);
 const quakeService = new QuakeService(geonet, config, logger);
 const stats = {
@@ -30,10 +32,10 @@ const stats = {
     peak_unique_connections: 0
 };
 
-sockets(io, quakeService, stats, config, logger);
-routes(server, quakeService, stats, config);
+routes(app, quakeService, stats, config);
+sockets(server, quakeService, stats, config, logger);
 
-http.listen(config.http_port, () => logger.log("Server listening on " + config.http_port + "."));
+server.listen(config.http_port, () => logger.log("Server listening on " + config.http_port + "."));
 
 // poll geonet
 quakeService.queryAllQuakes();

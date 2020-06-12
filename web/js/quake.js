@@ -1,4 +1,4 @@
-module.exports = class Quake {
+export default class Quake {
     static updatableFields = ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
 
     constructor(id) {
@@ -104,6 +104,14 @@ module.exports = class Quake {
             obj[field] = this[field];
         }
         return obj;
+    }
+
+    fromJSON(obj) {
+        this._id = obj.id;
+        this.url = obj.url;
+        for (const field of Quake.updatableFields) {
+            this[field] = obj[field];
+        }
     }
 }
 

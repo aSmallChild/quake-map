@@ -1,7 +1,7 @@
-const fetch = require('node-fetch');
-const Quake = require('./quake');
+import fetch from 'node-fetch';
+import Quake from '../web/js/quake.js';
 
-module.exports = class {
+export default class Geonet {
     constructor(logger) {
         this.logger = logger || console;
         this.urlQuakeSearch = 'https://quakesearch.geonet.org.nz/geojson';

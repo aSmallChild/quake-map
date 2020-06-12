@@ -1,6 +1,6 @@
-let quakeMap;
-// noinspection JSUnusedGlobalSymbols
-function initMap() {
+import QuakeMap from "./quakemap.js";
+
+window.initMap = function () {
     const map = new google.maps.Map(document.getElementById('map'), {
         center: {
             lat: -41.5,
@@ -10,5 +10,5 @@ function initMap() {
         disableDefaultUI: true
     });
 
-    quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'));
+    window.quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'));
 }

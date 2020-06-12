@@ -1,11 +1,14 @@
-const {TwingEnvironment, TwingLoaderFilesystem} = require('twing');
-const express = require('express');
-const path = require('path');
+import twing from 'twing';
+import express from 'express';
+import path from 'path';
 
-module.exports = (server, geonet, stats, config) => {
+const {TwingEnvironment, TwingLoaderFilesystem} = twing;
+
+export default (app, geonet, stats, config) => {
     const title = "Quake Map";
-    const templateDir = path.join(__dirname, '..', 'templates');
-    const webDir = path.join(__dirname, '..', 'web');
+    const dir = process.cwd();
+    const templateDir = path.join(dir, 'templates');
+    const webDir = path.join(dir, 'web');
     const loader = new TwingLoaderFilesystem(templateDir);
     const twing = new TwingEnvironment(loader);
     const themes = [
@@ -13,19 +16,19 @@ module.exports = (server, geonet, stats, config) => {
         ['/pipboy', 'pipboy']
     ];
 
-    server.all('/json', (req, res) => {
+    app.all('/json', (req, res) => {
         res.type('text/json');
         res.send(JSON.stringify(geonet.getAllQuakes()));
     });
 
-    server.all('/stats', (req, res) => {
+    app.all('/stats', (req, res) => {
         res.type('text/json');
         res.send(JSON.stringify(stats));
     });
 
     themes.forEach(theme => {
         const [endpoint, template] = theme;
-        server.all(endpoint, async (req, res) => {
+        app.all(endpoint, async (req, res) => {
             const output = twing.render('layout/quakemap.twig', {
                 title: title,
                 google_maps_key: config.google_maps_key,
@@ -36,5 +39,5 @@ module.exports = (server, geonet, stats, config) => {
         });
     });
 
-    server.use(express.static(webDir));
+    app.use(express.static(webDir));
 }

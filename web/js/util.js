@@ -1,4 +1,4 @@
-class Util {
+export default class Util {
     static close(element) {
         element.parentNode.removeChild(element);
     }
