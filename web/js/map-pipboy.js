@@ -1,7 +1,8 @@
+import Util from "./util.js";
 import QuakeMap from "./quake-map.js";
 import GoogleQuakeMarker from "./google-quake-marker.js";
 
-window.initMap = function () {
+window.initMap = async function () {
     const styledMapType = new google.maps.StyledMapType([{
         "featureType": "administrative",
         "stylers": [{"color": "#35ff3a"}, {"saturation": 100}, {"lightness": -15}, {"visibility": "simplified"}]
@@ -84,9 +85,13 @@ window.initMap = function () {
     });
     map.mapTypes.set('styled_map', styledMapType);
     map.setMapTypeId('styled_map');
-
-    window.quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
+    await ioReady;
+    /** @param window.io */
+    window.quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
     window.quakeMap.colours.list = ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'];
     window.quakeMap.colours.ring_recent = '#0F0';
     window.quakeMap.colours.ring_old = '#AFA';
 }
+const apiKey = document.getElementById('google_maps_key').value;
+Util.loadScript(`//maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`);
+const ioReady = Util.loadScript('/socket.io/socket.io.js');

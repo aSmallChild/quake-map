@@ -21,4 +21,14 @@ export default class Util {
         date = date ? date : new Date();
         return (new Date(date - date.getTimezoneOffset() * 60000)).toISOString().split('.')[0].replace('T', ' ');
     }
+
+    static loadScript(url) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = reject;
+            script.onload = resolve;
+            document.head.appendChild(script);
+        });
+    }
 }
