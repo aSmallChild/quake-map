@@ -50,7 +50,7 @@ html, body {
 #stats_container, #quake_info_container {
     top: 0;
     position: absolute;
-    z-index: 1;
+    z-index: 500;
 }
 
 .quake_info, .disclaimer {

@@ -1,4 +1,7 @@
-export default class GoogleQuakeMarker {
+import Util from "./util.js";
+import QuakeMap from "./quake-map.js";
+
+class GoogleQuakeMarker {
     constructor(map, config, colour) {
         this.map = map;
         this.config = config;
@@ -110,3 +113,31 @@ export default class GoogleQuakeMarker {
         this.marker.addListener(event, listener);
     }
 }
+
+(() => {
+    let ioReady;
+    window.initMap = async function () {
+        const map = new google.maps.Map(document.getElementById('map'), {
+            center: {
+                lat: -41.5,
+                lng: 174
+            },
+            zoom: 6,
+            disableDefaultUI: true
+        });
+        if (window.hasOwnProperty('mapStyleBuilder')) {
+            map.mapTypes.set('styled_map', window.mapStyleBuilder('google'));
+            map.setMapTypeId('styled_map');
+        }
+        await ioReady;
+        /** @param window.io */
+        /** @param window.google */
+        const quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
+        if (window.hasOwnProperty('onQuakeMap')) {
+            window.onQuakeMap(quakeMap);
+        }
+    }
+    const apiKey = document.getElementById('google_maps_key').value;
+    Util.loadScript(`//maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`);
+    ioReady = Util.loadScript('/socket.io/socket.io.js');
+})();

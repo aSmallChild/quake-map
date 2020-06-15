@@ -1,5 +1,6 @@
 {
   "google_maps_key": "",
+  "mapbox_access_token": "",
   "min_magnitude": 3,
   "max_depth_km": 250,
   "quake_cache_ttl_days": 1,

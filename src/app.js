@@ -7,6 +7,7 @@ import Geonet from './geonet.js';
 import sockets from './sockets.js';
 import routes from './routes.js';
 
+/** @param config.mapbox_access_token */
 /** @param config.quake_search_time_minutes */
 /** @param config.quake_cache_ttl_days */
 /** @param config.recent_quake_poll_time_minutes */
@@ -15,7 +16,7 @@ import routes from './routes.js';
 /** @param config.geonet_polling_interval_seconds */
 const config = JSON.parse(fs.readFileSync('./config.json').toString());
 if (!config) throw new Error('missing config');
-for (const prop of ['google_maps_key', 'min_magnitude', 'max_depth_km', 'quake_cache_ttl_days', 'geonet_polling_interval_seconds', 'full_refresh_interval_minutes', 'recent_quake_poll_time_minutes', 'quake_search_time_minutes', 'http_port']) {
+for (const prop of ['google_maps_key', 'mapbox_access_token', 'min_magnitude', 'max_depth_km', 'quake_cache_ttl_days', 'geonet_polling_interval_seconds', 'full_refresh_interval_minutes', 'recent_quake_poll_time_minutes', 'quake_search_time_minutes', 'http_port']) {
     if (!config.hasOwnProperty(prop)) throw new Error(`config.${prop} is not defined`);
 }
 

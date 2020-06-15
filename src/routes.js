@@ -32,6 +32,7 @@ export default (app, geonet, stats, config) => {
             const output = twing.render('layout/quakemap.twig', {
                 title: title,
                 google_maps_key: config.google_maps_key,
+                mapbox_access_token: config.mapbox_access_token,
                 theme: template
             });
             res.type('text/html');

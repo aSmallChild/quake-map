@@ -14,9 +14,12 @@
 <div id="stats_container"></div>
 <div id="quake_info_container"></div>
 <div id="map"></div>
-<script src="/js/map-{{ theme|escape('html_attr') }}.js" type="module" async defer></script>
-{% if google_maps_key %}
+{% if mapbox_access_token %}
+    <input type="hidden" id="mapbox_access_token" value="{{ mapbox_access_token|escape('url') }}">
+    <script src="/js/map-leaflet.js" type="module" async defer></script>
+{% elseif google_maps_key %}
     <input type="hidden" id="google_maps_key" value="{{ google_maps_key|escape('url') }}">
+    <script src="/js/map-google.js" type="module" async defer></script>
 {% endif %}
 {% include '/components/disclaimer.html' %}
 {% include '/components/trackers.html' ignore missing %}

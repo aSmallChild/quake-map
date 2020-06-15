@@ -31,4 +31,16 @@ export default class Util {
             document.head.appendChild(script);
         });
     }
+
+    static loadStyle(url) {
+        return new Promise((resolve, reject) => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = url;
+            link.onerror = reject;
+            link.onload = resolve;
+            document.head.appendChild(link);
+        });
+    }
 }
