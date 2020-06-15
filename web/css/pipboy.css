@@ -19,3 +19,13 @@ a, .quake_field {
 .quake_field span, .quake_field a {
     color: #0f0;
 }
+
+.leaflet-container .leaflet-control-attribution {
+    background: #002e02 !important;
+    color: #0d0 !important;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+    color: #0f0 !important;
+    text-decoration: underline !important;
+}

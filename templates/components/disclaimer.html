@@ -1,13 +1,15 @@
 <div class="disclaimer" style="display: none;">
+    <a href="//github.com/aSmallChild/quake-map">View on github</a>.
     Data is provided by
-    <a href="https://geonet.org.nz">Geonet</a> &amp;
-    <a href="https://gns.cri.nz">GNS Science</a> under the Creative Commons license
+    <a href="//geonet.org.nz">Geonet</a> &amp;
+    <a href="//gns.cri.nz">GNS Science</a> under the Creative Commons license
 </div>
 <script type="module">
     import Util from '/js/util.js';
+
     const disclaimer = document.querySelector('.disclaimer');
     setTimeout(() => {
         Util.shrinkIn(disclaimer);
-        setTimeout(() => Util.shrinkOut(disclaimer), 15000);
+        setTimeout(() => Util.shrinkOut(disclaimer), 45000);
     }, 5000);
 </script>

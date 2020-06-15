@@ -14,15 +14,17 @@ class LeafletQuakeMarker {
         const position = [quake.lat, quake.long];
         if (this._marker) {
             this._marker.setLatLng(position);
-            this._marker.setStyle(this.buildIcon(quake));
+            const style = this.buildStyle(quake)
+            this._marker.setStyle(style);
+            this._marker.setRadius(style.radius);
         } else {
-            this._marker = L.circle(position, this.buildIcon(quake));
+            this._marker = L.circle(position, this.buildStyle(quake));
             this._marker.addTo(this.map);
         }
         this._marker.off();
     }
 
-    buildIcon(quake) {
+    buildStyle(quake) {
         // make recent quakes more opaque
         const fromDate = new Date();
         fromDate.setDate(fromDate.getDate() - this.config.search_within);
@@ -32,10 +34,14 @@ class LeafletQuakeMarker {
         return {
             fillColor: this.getQuakeFillColour(quake),
             fillOpacity: opacity,
-            radius: (7 + Math.pow(2, quake.mag) / 2) * 1000,
+            radius: (7 + Math.pow(quake.mag, 2)) * 1000,
             color: this.colour,
-            weight: this._selected ? 2 : 1
+            weight: this.getStrokeWeight()
         };
+    }
+
+    getStrokeWeight() {
+        return this.selected ? 4 : 2;
     }
 
     getQuakeFillColour(quake) {
@@ -64,7 +70,7 @@ class LeafletQuakeMarker {
     set selected(isSelected) {
         this._selected = isSelected;
         if (this._marker) {
-            this._marker.setStyle({weight: this._selected ? 2 : 1});
+            this._marker.setStyle({weight: this.getStrokeWeight()});
         }
     }
 
@@ -122,7 +128,7 @@ const ioReady = Util.loadScript('/socket.io/socket.io.js');
     const map = L.map('map', {zoomControl: false}).setView([-41.5, 174], 6);
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{style}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
         style: window.hasOwnProperty('mapStyleBuilder') ? window.mapStyleBuilder('leaflet') : 'mapbox/streets-v11',
         tileSize: 512,
@@ -131,8 +137,8 @@ const ioReady = Util.loadScript('/socket.io/socket.io.js');
     }).addTo(map);
 
     await ioReady;
-    const quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), LeafletQuakeMarker);
+    window.quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), LeafletQuakeMarker);
     if (window.hasOwnProperty('onQuakeMap')) {
-        window.onQuakeMap(quakeMap);
+        window.onQuakeMap(window.quakeMap);
     }
 })();

@@ -38,8 +38,12 @@ class GoogleQuakeMarker {
             fillOpacity: opacity,
             scale: 7 + Math.pow(2, quake.mag) / 2,
             strokeColor: this.colour,
-            strokeWeight: this._selected ? 2 : 1
+            strokeWeight: this.getStrokeWeight()
         };
+    }
+
+    getStrokeWeight() {
+        return this.selected ? 5 : 2;
     }
 
     getQuakeFillColour(quake) {
@@ -69,7 +73,7 @@ class GoogleQuakeMarker {
         this._selected = isSelected;
         if (this.marker) {
             const icon = this.marker.getIcon();
-            icon.strokeWeight = this._selected ? 2 : 1;
+            icon.strokeWeight = this.getStrokeWeight();
             this.marker.setIcon(icon);
         }
     }
@@ -132,9 +136,9 @@ class GoogleQuakeMarker {
         await ioReady;
         /** @param window.io */
         /** @param window.google */
-        const quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
+        window.quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
         if (window.hasOwnProperty('onQuakeMap')) {
-            window.onQuakeMap(quakeMap);
+            window.onQuakeMap(window.quakeMap);
         }
     }
     const apiKey = document.getElementById('google_maps_key').value;

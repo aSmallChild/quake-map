@@ -11,8 +11,8 @@ This is node.js app that uses the Geonet API to pull quake data. It uses socket.
 ## Built With
 
 * [Leaflet](https://leafletjs.com/) & [mapbox](https://www.mapbox.com/) - open source maps.
-* [Node.js](https://nodejs.org/en/)
-* [Socket.io](https://socket.io/) - Websockets!
+* [Geonet](https://geonet.org.nz/) & [GNS Science](https://gns.cri.nz/) - earthquake data.
+* [Node.js](https://nodejs.org/en/) & [Socket.io](https://socket.io/) - websockets!
 * [Docker](https://www.docker.com/) - This can also run in Docker.
 
 ## License

@@ -44,13 +44,16 @@ html, body {
 }
 
 #quake_info_container::-webkit-scrollbar {
-  display: none;
+    display: none;
+}
+
+.disclaimer, #stats_container, #quake_info_container {
+    position: absolute;
+    z-index: 500;
 }
 
 #stats_container, #quake_info_container {
     top: 0;
-    position: absolute;
-    z-index: 500;
 }
 
 .quake_info, .disclaimer {
@@ -75,10 +78,8 @@ a, .quake_field {
 }
 
 .disclaimer {
-    position: absolute;
     bottom: 20px;
     left: 0;
-    z-index: 1;
     margin: 10px;
 }
 
