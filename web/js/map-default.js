@@ -1,4 +1,5 @@
-import QuakeMap from "./quakemap.js";
+import QuakeMap from "./quake-map.js";
+import GoogleQuakeMarker from "./google-quake-marker.js";
 
 window.initMap = function () {
     const map = new google.maps.Map(document.getElementById('map'), {
@@ -10,5 +11,5 @@ window.initMap = function () {
         disableDefaultUI: true
     });
 
-    window.quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'));
+    window.quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
 }

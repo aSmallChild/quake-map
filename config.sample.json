@@ -3,9 +3,9 @@
   "min_magnitude": 3,
   "max_depth_km": 250,
   "quake_cache_ttl_days": 1,
-  "geonet_polling_interval_seconds": 30,
+  "geonet_polling_interval_seconds": 45,
   "full_refresh_interval_minutes": 45,
-  "recent_quake_poll_time_minutes": 30,
-  "quake_search_time_minutes": 2,
+  "recent_quake_poll_time_minutes": 20,
+  "quake_search_time_minutes": 10,
   "http_port": 8000
 }

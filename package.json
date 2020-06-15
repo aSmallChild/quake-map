@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Recent NZ quakes on a google map.",
   "type": "module",
-  "main": "src/server.js",
+  "main": "src/app.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/aSmallChild/quake-map"
@@ -18,7 +18,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js"
+    "start": "node src/app.js"
   },
   "author": "asmallchild",
   "license": "GPLV3"

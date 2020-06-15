@@ -1,4 +1,5 @@
-import QuakeMap from "./quakemap.js";
+import QuakeMap from "./quake-map.js";
+import GoogleQuakeMarker from "./google-quake-marker.js";
 
 window.initMap = function () {
     const styledMapType = new google.maps.StyledMapType([{
@@ -84,7 +85,7 @@ window.initMap = function () {
     map.mapTypes.set('styled_map', styledMapType);
     map.setMapTypeId('styled_map');
 
-    window.quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'));
+    window.quakeMap = new QuakeMap(map, io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker);
     window.quakeMap.colours.list = ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'];
     window.quakeMap.colours.ring_recent = '#0F0';
     window.quakeMap.colours.ring_old = '#AFA';

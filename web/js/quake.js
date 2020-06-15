@@ -4,6 +4,7 @@ export default class Quake {
     constructor(id) {
         this._id = id;
         this.url = '';
+        this._recentForSeconds = 300;
     }
 
     get id() {
@@ -39,7 +40,7 @@ export default class Quake {
     }
 
     set time(value) {
-        this._time = value;
+        this._time = new Date(value);
     }
 
     get depth() {
@@ -72,6 +73,15 @@ export default class Quake {
 
     set url(value) {
         this._url = value;
+    }
+
+    set recent(seconds) {
+        this._recentForSeconds = seconds;
+    }
+
+    get recent() {
+        const recentPeriod = Date.now() - this._recentForSeconds;
+        return recentPeriod < this.time.getTime();
     }
 
     equals(that) {

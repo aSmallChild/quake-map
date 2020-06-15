@@ -6,7 +6,7 @@ export default class Util {
     static shrinkOut(element) {
         element.classList.add('shrink_out');
         setTimeout(() => {
-            Util.close(element);
+            element.style.display = 'none';
             element.classList.remove('shrink_out');
         }, 100);
     }

@@ -29,20 +29,28 @@ html, body {
 
 #stats_container {
     left: 0;
+    margin: 10px;
 }
 
 #quake_info_container {
     right: 0;
     width: 275px;
-    overflow: hidden;
+    max-height: 100%;
+    margin-right: 10px;
+    padding-top: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+}
+
+#quake_info_container::-webkit-scrollbar {
+  display: none;
 }
 
 #stats_container, #quake_info_container {
     top: 0;
     position: absolute;
-    display: inline-block;
     z-index: 1;
-    margin: 10px;
 }
 
 .quake_info, .disclaimer {
