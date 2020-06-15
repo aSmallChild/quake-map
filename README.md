@@ -4,12 +4,13 @@ This is node.js app that uses the Geonet API to pull quake data. It uses socket.
 
 ## Deployment
 
-* Rename [config.sample.json](config.sample.json) to `config.json` and add your google maps key.
+* Rename [config.sample.json](config.sample.json) to `config.json` and add your mapbox access token or google maps key.
 * To embed trackers, add any html snippet in a file called [templates/components/trackers.html](templates/components/trackers.html)
 * Can be deployed with docker. See [howtodocker.txt](howtodocker.txt) for more information.
 
 ## Built With
 
+* [Leaflet](https://leafletjs.com/) & [mapbox](https://www.mapbox.com/) - open source maps.
 * [Node.js](https://nodejs.org/en/)
 * [Socket.io](https://socket.io/) - Websockets!
 * [Docker](https://www.docker.com/) - This can also run in Docker.
