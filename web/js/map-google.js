@@ -7,6 +7,10 @@ class GoogleQuakeMarker {
         this.config = config;
         this._selected = false;
         this.colour = colour;
+        /** @prop this._marker.setIcon */
+        /** @prop this._marker.getIcon */
+        /** @prop this._marker.getPosition */
+        /** @prop this._marker.setMap */
         this._marker = null;
     }
 
@@ -91,7 +95,6 @@ class GoogleQuakeMarker {
     }
 
     adjustMapZoomAndPosition(map, avgLat, avgLong, latRange, longRange) {
-        map.panTo(new google.maps.LatLng(avgLat, avgLong));
         if (latRange < 1.75 && longRange < 1.75) {
             map.setZoom(9);
         } else if (latRange < 4 && longRange < 4) {
@@ -101,6 +104,7 @@ class GoogleQuakeMarker {
         } else {
             map.setZoom(6);
         }
+        map.panTo(new google.maps.LatLng(avgLat, avgLong));
     }
 
     ensureMarkerIsInView(map) {
@@ -121,6 +125,10 @@ class GoogleQuakeMarker {
 (() => {
     let ioReady;
     window.initMap = async function () {
+        /** @prop google.maps.LatLng */
+        /** @prop google.maps.Marker */
+        /** @prop google.maps.event.clearInstanceListeners */
+        /** @prop google.maps.SymbolPath.CIRCLE */
         const map = new google.maps.Map(document.getElementById('map'), {
             center: {
                 lat: -41.5,

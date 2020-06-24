@@ -15,8 +15,12 @@ class LeafletQuakeMarker {
         this._marker = null;
     }
 
+    static convertPosition(lat, long) {
+        return [lat, long < 0 ? long + 360 : long];
+    }
+
     update(quake) {
-        const position = [quake.lat, quake.long < 0 ? quake.long + 360 : quake.long];
+        const position = LeafletQuakeMarker.convertPosition(quake.lat, quake.long);
         if (this._marker) {
             this._marker.setLatLng(position);
             const style = this.buildStyle(quake)
@@ -93,16 +97,15 @@ class LeafletQuakeMarker {
     }
 
     adjustMapZoomAndPosition(map, avgLat, avgLong, latRange, longRange) {
-        map.panTo([avgLat, avgLong]);
+        let zoom = 6;
         if (latRange < 1.75 && longRange < 1.75) {
-            map.setZoom(9);
+            zoom = 9;
         } else if (latRange < 4 && longRange < 4) {
-            map.setZoom(8);
+            zoom = 8;
         } else if (latRange < 8 && longRange < 8) {
-            map.setZoom(7);
-        } else {
-            map.setZoom(6);
+            zoom = 7;
         }
+        map.setView(LeafletQuakeMarker.convertPosition(avgLat, avgLong), zoom);
     }
 
     ensureMarkerIsInView(map) {
@@ -134,7 +137,7 @@ const ioReady = Util.loadScript('/socket.io/socket.io.js');
     const accessToken = document.getElementById('mapbox_access_token').value;
     await cssReady;
     await mapReady;
-    const map = L.map('map', {zoomControl: false}).setView([-41.5, 174], 6);
+    const map = L.map('map', {zoomControl: false}).setView(LeafletQuakeMarker.convertPosition(-41.5, 174), 6);
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{style}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
