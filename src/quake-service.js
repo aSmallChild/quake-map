@@ -97,6 +97,7 @@ export default class QuakeService {
     refreshRecentQuakes() {
         const recentPeriod = Date.now() - this.config.recent_quake_poll_time_minutes * 60000;
         for (const id in this.cache) {
+            if (!this.cache.hasOwnProperty(id)) continue;
             const quake = this.cache[id];
             if (Date.parse(quake.time) < recentPeriod) {
                 this.stopPollingQuake(quake, 'Outside polling period.');
@@ -118,9 +119,9 @@ export default class QuakeService {
 
         let fromDate = new Date();
         fromDate.setDate(fromDate.getDate() - this.config.quake_cache_ttl_days);
-        fromDate = fromDate.toISOString();
 
         for (const id in this.cache) {
+            if (!this.cache.hasOwnProperty(id)) continue;
             const quake = this.cache[id];
             if (quake.time < fromDate) {
                 oldQuakeIds.push(id);

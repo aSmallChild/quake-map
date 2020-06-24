@@ -16,7 +16,7 @@ export default class Geonet {
      * @param {number[]} boxCoordinates
      * @returns {Promise<[]>}
      */
-    async searchQuakes(fromDate, minMagnitude= 0, maxDepth= 0, boxCoordinates= null) {
+    async searchQuakes(fromDate, minMagnitude = 0, maxDepth = 0, boxCoordinates = null) {
         // {
         //     "type": "FeatureCollection",
         //     "features": [{
