@@ -1,5 +1,7 @@
 export default class Quake {
-    static updatableFields = ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
+    static get updatableFields() {
+        return ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
+    }
 
     constructor(id) {
         this._id = id;
