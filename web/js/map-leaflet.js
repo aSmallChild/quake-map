@@ -7,11 +7,16 @@ class LeafletQuakeMarker {
         this.config = config;
         this._selected = false;
         this.colour = colour;
+        /** @prop this._marker.addTo */
+        /** @prop this._marker.setLatLng */
+        /** @prop this._marker.setStyle */
+        /** @prop this._marker.setRadius */
+        /** @prop this._marker.getLatLng */
         this._marker = null;
     }
 
     update(quake) {
-        const position = [quake.lat, quake.long];
+        const position = [quake.lat, quake.long < 0 ? quake.long + 360 : quake.long];
         if (this._marker) {
             this._marker.setLatLng(position);
             const style = this.buildStyle(quake)
@@ -120,8 +125,12 @@ const mapReady = Util.loadScript('//unpkg.com/leaflet@1.6.0/dist/leaflet.js');
 const ioReady = Util.loadScript('/socket.io/socket.io.js');
 
 (async () => {
-    /** @param window.io */
-    /** @param window.L */
+    /** @prop window.io */
+    /** @prop L.circle */
+    /** @prop L.tileLayer */
+    /** @prop map.setView */
+    /** @prop map.panTo */
+    /** @prop map.setZoom */
     const accessToken = document.getElementById('mapbox_access_token').value;
     await cssReady;
     await mapReady;
