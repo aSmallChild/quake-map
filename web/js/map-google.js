@@ -95,9 +95,7 @@ class GoogleQuakeMarker {
     }
 
     adjustMapZoomAndPosition(map, avgLat, avgLong, latRange, longRange) {
-        if (latRange < 1.75 && longRange < 1.75) {
-            map.setZoom(9);
-        } else if (latRange < 4 && longRange < 4) {
+        if (latRange < 4 && longRange < 4) {
             map.setZoom(8);
         } else if (latRange < 8 && longRange < 8) {
             map.setZoom(7);

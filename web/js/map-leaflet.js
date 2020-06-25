@@ -98,9 +98,7 @@ class LeafletQuakeMarker {
 
     adjustMapZoomAndPosition(map, avgLat, avgLong, latRange, longRange) {
         let zoom = 6;
-        if (latRange < 1.75 && longRange < 1.75) {
-            zoom = 9;
-        } else if (latRange < 4 && longRange < 4) {
+        if (latRange < 4 && longRange < 4) {
             zoom = 8;
         } else if (latRange < 8 && longRange < 8) {
             zoom = 7;
