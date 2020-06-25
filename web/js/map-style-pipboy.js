@@ -2,6 +2,7 @@ window.mapStyleBuilder = (type) => {
     if (type === 'leaflet') {
         return 'asmallchild/ckbg3qvcd3w9j1iqq4s9bhomg';
     } else {
+        /** @prop google.maps.StyledMapType */
         return new google.maps.StyledMapType([{
             "featureType": "administrative",
             "stylers": [{"color": "#35ff3a"}, {"saturation": 100}, {"lightness": -15}, {"visibility": "simplified"}]

@@ -18,11 +18,13 @@ export default class QuakeService {
     queryAllQuakes() {
         const fromDate = new Date();
         fromDate.setDate(fromDate.getDate() - this.config.quake_cache_ttl_days);
+        // noinspection JSIgnoredPromiseFromCall
         this.queryQuakes(fromDate);
     }
 
     checkForNewQuakes() {
         const fromDate = new Date(this.lastQueryTime.getTime() - this.config.quake_search_time_minutes * 60000);
+        // noinspection JSIgnoredPromiseFromCall
         this.queryQuakes(fromDate);
     }
 
@@ -110,6 +112,7 @@ export default class QuakeService {
         }
 
         for (const id in this.recentQuakes) {
+            // noinspection JSIgnoredPromiseFromCall
             this.refreshQuake(this.recentQuakes[id]);
         }
     }
