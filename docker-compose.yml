@@ -1,0 +1,8 @@
+version: '3.3'
+services:
+    frontend:
+        build: .
+        restart: unless-stopped
+        ports:
+            - '49160:8000'
+        image: run
