@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
     <title>{{ title }}</title>
-    <meta name="viewport" content="initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta charset="utf-8">
     <meta name="apple-mobile-web-app-title" content="{{ title|escape('html_attr') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="HandheldFriendly" content="true"/>
+    <meta http-equiv="refresh" content="21600">
     <link rel="stylesheet" href="/css/base.css">
     {% include ['/components/links_' + theme + '.html', '/components/links_default.html'] %}
 </head>
