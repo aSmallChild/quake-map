@@ -1,4 +1,4 @@
-window.mapStyleBuilder = (type) => {
+export function mapStyleBuilder(type) {
     if (type === 'leaflet') {
         return 'asmallchild/ckbg3qvcd3w9j1iqq4s9bhomg';
     } else {
@@ -78,8 +78,8 @@ window.mapStyleBuilder = (type) => {
     }
 }
 
-window.onQuakeMap = quakeMap => {
+export function onQuakeMap(quakeMap) {
     quakeMap.colours.list = ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'];
     quakeMap.colours.ring_recent = '#0F0';
     quakeMap.colours.ring_old = '#AFA';
-};
+}

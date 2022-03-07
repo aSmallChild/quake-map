@@ -7,8 +7,8 @@
     onMount(() => {
         setTimeout(() => {
             shrinkIn(disclaimer);
-            setTimeout(() => shrinkOut(disclaimer), 4500);
-        }, 500);
+            setTimeout(() => shrinkOut(disclaimer), 45000);
+        }, 5000);
     });
 </script>
 

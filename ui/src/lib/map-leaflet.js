@@ -1,4 +1,4 @@
-import Util from "./util.js";
+import {loadStyle, loadScript} from "./util.js";
 import QuakeMap from "./quake-map.js";
 
 class LeafletQuakeMarker {
@@ -121,34 +121,20 @@ class LeafletQuakeMarker {
     }
 }
 
-const cssReady = Util.loadStyle('//unpkg.com/leaflet@1.6.0/dist/leaflet.css');
-const mapReady = Util.loadScript('//unpkg.com/leaflet@1.6.0/dist/leaflet.js');
-const ioReady = Util.loadScript('/socket.io/socket.io.js');
-
-(async () => {
-    /** @prop window.io */
-    /** @prop L.circle */
-    /** @prop L.tileLayer */
-    /** @prop map.setView */
-    /** @prop map.panTo */
-    /** @prop map.setZoom */
-    const accessToken = document.getElementById('mapbox_access_token').value;
-    await cssReady;
+export default async function createLeafletMap(mapElement, accessToken, styleBuilder) {
+    const mapReady = loadScript('//unpkg.com/leaflet@1.6.0/dist/leaflet.js');
+    loadStyle('//unpkg.com/leaflet@1.6.0/dist/leaflet.css');
     await mapReady;
-    const map = L.map('map', {zoomControl: false}).setView(LeafletQuakeMarker.convertPosition(-41.5, 174), 6);
+    const map = L.map(mapElement, {zoomControl: false}).setView(LeafletQuakeMarker.convertPosition(-41.5, 174), 6);
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{style}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
-        style: window.hasOwnProperty('mapStyleBuilder') ? window.mapStyleBuilder('leaflet') : 'mapbox/streets-v11',
+        style: styleBuilder ? styleBuilder('leaflet') : 'mapbox/streets-v11',
         tileSize: 512,
         zoomOffset: -1,
-        accessToken: accessToken
+        accessToken
     }).addTo(map);
 
-    await ioReady;
-    window.quakeMap = new QuakeMap(map, window.io(), document.getElementById('quake_info_container'), document.getElementById('stats_container'), LeafletQuakeMarker);
-    if (window.hasOwnProperty('onQuakeMap')) {
-        window.onQuakeMap(window.quakeMap);
-    }
-})();
+    return new QuakeMap(map, document.getElementById('quake_info_container'), document.getElementById('stats_container'), LeafletQuakeMarker);
+}

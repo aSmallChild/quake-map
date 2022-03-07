@@ -1,5 +1,5 @@
-import Util from "./util.js";
-import Quake from "./quake.js";
+import {shrinkIn, shrinkOut, close, getDateTimeString} from './util.js';
+import Quake from './quake.js';
 
 class QuakeWrapper {
     constructor(quake, colour) {
@@ -31,7 +31,7 @@ class QuakeWrapper {
 
     destroy() {
         this.marker.visible = false;
-        Util.close(this.infoDiv);
+        close(this.infoDiv);
     }
 
     buildQuakeInfoDiv() {
@@ -46,10 +46,10 @@ class QuakeWrapper {
             <div class="quake_field">Geonet: <a style="color:${this.colour}" href="${quake.url}" target="_blank" rel="noopener noreferrer">${quake.id}</a></div>
             <div class="quake_field">Magnitude: <span>${quake.mag.toFixed(1)}</span></div>
             <div class="quake_field">Depth: <span>${quake.depth.toFixed(1)}</span>&nbsp;km</div>
-            <div class="quake_field">Time: <span>${Util.getDateTimeString(new Date(quake.time)).replace(' ', '&nbsp;')}</span></div>`;
+            <div class="quake_field">Time: <span>${getDateTimeString(new Date(quake.time)).replace(' ', '&nbsp;')}</span></div>`;
         this.infoDiv.querySelector('.close').addEventListener('click', e => {
             e.cancelBubble = true;
-            Util.shrinkOut(this.infoDiv);
+            shrinkOut(this.infoDiv);
         });
 
         if (this.quake.recent) this.infoDiv.classList.add('recent_quake');
@@ -57,8 +57,8 @@ class QuakeWrapper {
     }
 
     set infoVisible(visible) {
-        if (visible) Util.shrinkIn(this.infoDiv);
-        else Util.shrinkOut(this.infoDiv);
+        if (visible) shrinkIn(this.infoDiv);
+        else shrinkOut(this.infoDiv);
     }
 
     update() {
@@ -71,7 +71,7 @@ class QuakeWrapper {
 }
 
 export default class QuakeMap {
-    constructor(map, socket, quakeInfoContainer, statsContainer, markerClass) {
+    constructor(map, quakeInfoContainer, statsContainer, markerClass) {
         this.map = map;
         this.quakeInfoContainer = quakeInfoContainer;
         this.statsContainer = statsContainer;
@@ -80,43 +80,59 @@ export default class QuakeMap {
         this.config = {};
         this.colours = {
             list: ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'],
-            next_index: 0
+            next_index: 0,
         };
-
-        this.bindSocketEvents(socket);
     }
 
-    bindSocketEvents(socket) {
-        socket.on('all_quakes', allQuakes => {
-            for (const id in allQuakes) {
-                if (allQuakes.hasOwnProperty(id)) this.addQuakeData(allQuakes[id]);
-            }
+    on(event, data) {
+        switch (event) {
+            case 'all_quakes':
+                return this.handleEventAllQuakes(data);
+            case 'old_quakes':
+                return this.handleEventOldQuakes(data);
+            case 'new_quakes':
+                return this.handleEventNewQuakes(data);
+            case 'stats':
+                return this.handleEventStats(data);
+            case 'config':
+                return this.handleEventConfig(data);
+        }
+    }
 
-            for (const id in this.markers) {
-                if (!allQuakes.hasOwnProperty(id)) {
-                    this.removeMarker(id);
-                }
-            }
-            this.recenterMap();
-        });
+    handleEventAllQuakes(allQuakes) {
+        for (const id in allQuakes) {
+            if (allQuakes.hasOwnProperty(id)) this.addQuakeData(allQuakes[id]);
+        }
 
-        socket.on('old_quakes', oldQuakesIds => oldQuakesIds.forEach(id => {
+        for (const id in this.markers) {
+            if (!allQuakes.hasOwnProperty(id)) {
+                this.removeMarker(id);
+            }
+        }
+        this.recenterMap();
+    }
+
+    handleEventOldQuakes(oldQuakesIds) {
+        oldQuakesIds.forEach(id => {
             if (this.markers.hasOwnProperty(id)) {
                 this.removeMarker(id);
             }
-        }));
-        socket.on('new_quakes', newQuakes => {
-            newQuakes.forEach(quake => this.addQuakeData(quake));
-            this.recenterMap();
         });
+    }
 
-        socket.on('stats', stats => {
-            this.statsContainer.innerHTML = stats.connected_clients + ' client' + (stats.connected_clients > 1 ? 's ' : ' ');
-            this.statsContainer.innerHTML += stats.unique_connections + ' viewer' + (stats.unique_connections > 1 ? 's' : '');
-            Util.shrinkIn(this.statsContainer);
-        });
+    handleEventNewQuakes(newQuakes) {
+        newQuakes.forEach(quake => this.addQuakeData(quake));
+        this.recenterMap();
+    }
 
-        socket.on('config', config => this.config = config);
+    handleEventStats(stats) {
+        this.statsContainer.innerHTML = stats.connected_clients + ' client' + (stats.connected_clients > 1 ? 's ' : ' ');
+        this.statsContainer.innerHTML += stats.unique_connections + ' viewer' + (stats.unique_connections > 1 ? 's' : '');
+        shrinkIn(this.statsContainer);
+    }
+
+    handleEventConfig(config) {
+        this.config = config;
     }
 
     getNextColour() {
@@ -165,7 +181,7 @@ export default class QuakeMap {
             longs /= total;
             const latRange = Math.abs(maxLat - minLat);
             const longRange = Math.abs(maxLong - minLong);
-            latestMarker.marker.adjustMapZoomAndPosition(this.map, lats, longs, latRange, longRange)
+            latestMarker.marker.adjustMapZoomAndPosition(this.map, lats, longs, latRange, longRange);
         }
 
         if (!selectedMarker && latestMarker) {
