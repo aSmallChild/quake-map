@@ -5,10 +5,10 @@
     import {onQuakeMap, mapStyleBuilder} from './lib/map-style-pipboy.js';
 
     async function createMap(mapContainer) {
-        const mapType = 'leaflet'; // todo env var
-        const mapTheme = 'pipboy'; // todo decide based on route
+        const mapTheme = 'default'; // todo decide based on route
         const styleBuilder = mapTheme == 'pipboy' ? mapStyleBuilder : null;
         const onMapCreated = mapTheme == 'pipboy' ? onQuakeMap : null;
+        document.body.classList.add(mapTheme);
         const mapCreated = quakeMap => {
             if (onMapCreated) {
                 onMapCreated(quakeMap);
@@ -18,26 +18,22 @@
             //     quakeMap.on(event, data);
             // })
         };
-
-        if (mapType == 'google') {
-            const apiKey = '';// todo env var;
-            mapCreated(await createGoogleMap(mapContainer, apiKey, styleBuilder));
-        } else if (mapType == 'leaflet') {
-            const accessToken = '';// todo env var;
-            mapCreated(await createLeafletMap(mapContainer, accessToken, styleBuilder));
-        } else {
-            // todo handle error
+        if (import.meta.env.VITE_GOOGLE_MAP_KEY) {
+            return mapCreated(await createGoogleMap(mapContainer, import.meta.env.VITE_GOOGLE_MAP_KEY, styleBuilder));
         }
+        if (import.meta.env.VITE_LEAFLET_ACCESS_TOKEN) {
+            return mapCreated(await createLeafletMap(mapContainer, import.meta.env.VITE_LEAFLET_ACCESS_TOKEN, styleBuilder));
+        }
+        console.error('No public map API key configured.');
     }
 </script>
 
-<main>
-    <div id="stats_container"></div>
-    <div id="quake_info_container"></div>
-    <div class="map" use:createMap></div>
-    <Disclaimer/>
-</main>
+<div id="stats_container"></div>
+<div id="quake_info_container"></div>
+<div class="map" use:createMap></div>
+<Disclaimer/>
 
-<style lang="scss">
+<style lang="scss" global>
   @import "css/base.css";
+  @import "css/pipboy.scss";
 </style>

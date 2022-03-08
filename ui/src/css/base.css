@@ -23,7 +23,7 @@ html, body {
   }
 }
 
-.map {
+.map, #app {
   height: 100%;
 }
 
