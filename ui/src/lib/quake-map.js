@@ -71,10 +71,8 @@ class QuakeWrapper {
 }
 
 export default class QuakeMap {
-    constructor(map, quakeInfoContainer, statsContainer, markerClass) {
+    constructor(map, markerClass) {
         this.map = map;
-        this.quakeInfoContainer = quakeInfoContainer;
-        this.statsContainer = statsContainer;
         this.markerClass = markerClass;
         this.markers = {};
         this.config = {};
@@ -82,6 +80,10 @@ export default class QuakeMap {
             list: ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'],
             next_index: 0,
         };
+    }
+
+    setQuakeInfoContainer(quakeInfoContainer) {
+        this.quakeInfoContainer = quakeInfoContainer;
     }
 
     on(event, data) {
@@ -123,12 +125,6 @@ export default class QuakeMap {
     handleEventNewQuakes(newQuakes) {
         newQuakes.forEach(quake => this.addQuakeData(quake));
         this.recenterMap();
-    }
-
-    handleEventStats(stats) {
-        this.statsContainer.innerHTML = stats.connected_clients + ' client' + (stats.connected_clients > 1 ? 's ' : ' ');
-        this.statsContainer.innerHTML += stats.unique_connections + ' viewer' + (stats.unique_connections > 1 ? 's' : '');
-        shrinkIn(this.statsContainer);
     }
 
     handleEventConfig(config) {

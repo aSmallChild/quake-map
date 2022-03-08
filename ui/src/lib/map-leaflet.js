@@ -136,5 +136,5 @@ export default async function createLeafletMap(mapElement, accessToken, styleBui
         accessToken
     }).addTo(map);
 
-    return new QuakeMap(map, document.getElementById('quake_info_container'), document.getElementById('stats_container'), LeafletQuakeMarker);
+    return new QuakeMap(map, LeafletQuakeMarker);
 }

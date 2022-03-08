@@ -27,12 +27,12 @@ html, body {
   height: 100%;
 }
 
-#stats_container {
+.stats {
   left: 0;
   margin: 10px;
 }
 
-#quake_info_container {
+.quake_info_container {
   right: 0;
   width: 275px;
   max-height: 100%;
@@ -43,16 +43,16 @@ html, body {
   -ms-overflow-style: none;
 }
 
-#quake_info_container::-webkit-scrollbar {
+.quake_info_container::-webkit-scrollbar {
   display: none;
 }
 
-.disclaimer, #stats_container, #quake_info_container {
+.disclaimer, .stats, .quake_info_container {
   position: absolute;
   z-index: 500;
 }
 
-#stats_container, #quake_info_container {
+.stats, .quake_info_container {
   top: 0;
 }
 

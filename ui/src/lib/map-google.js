@@ -137,7 +137,7 @@ export default function createGoogleMap(mapElement, apiKey, styleBuilder) {
                 map.mapTypes.set('styled_map', styleBuilder('google'));
                 map.setMapTypeId('styled_map');
             }
-            win(new QuakeMap(map, document.getElementById('quake_info_container'), document.getElementById('stats_container'), GoogleQuakeMarker));
+            win(new QuakeMap(map, GoogleQuakeMarker));
         }
     });
 }
