@@ -94,8 +94,6 @@ export default class QuakeMap {
                 return this.handleEventOldQuakes(data);
             case 'new_quakes':
                 return this.handleEventNewQuakes(data);
-            case 'stats':
-                return this.handleEventStats(data);
             case 'config':
                 return this.handleEventConfig(data);
         }
