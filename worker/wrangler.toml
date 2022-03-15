@@ -1,9 +1,6 @@
-name = "geonet"
+name = "quake-service"
 type = "javascript"
-account_id = ""
 workers_dev = true
-route = ""
-zone_id = ""
 compatibility_date = "2022-03-04"
 
 [build]
@@ -15,8 +12,20 @@ format = "modules"
 main = "./index.mjs"
 
 [durable_objects]
-bindings = [{name = "GEONET", class_name = "Geonet"}]
+bindings = [{ name = "QUAKE_SERVICE", class_name = "QuakeService" }]
 
 [[migrations]]
 tag = "v1"
-new_classes = ["Geonet"]
+new_classes = ["QuakeService"]
+
+[vars]
+MIN_MAGNITUDE = 3
+MAX_DEPTH_KM = 250
+QUAKE_CACHE_TTL_DAYS = 1
+GEONET_POLLING_INTERVAL_SECONDS = 45
+FULL_REFRESH_INTERVAL_MINUTES = 45
+RECENT_QUAKE_POLL_TIME_MINUTES = 20
+QUAKE_SEARCH_TIME_MINUTES = 10
+
+[env.production.triggers]
+crons = ['3/4 * * * *']

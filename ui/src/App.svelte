@@ -4,11 +4,11 @@
     import Stats from './components/Stats.svelte';
     import MapPipboy from './pages/MapPipboy.svelte';
     import MapDefault from './pages/MapDefault.svelte';
-    import {registerSocketListener} from './lib/client-socket-handler.js';
+    import {addSocketListener} from './lib/client-socket-handler.js';
 
     let stats = {unique_connections: 0, connected_clients: 0};
 
-    registerSocketListener((event, data) => {
+    addSocketListener((event, data) => {
         if (event === 'stats') {
             stats = data;
         }

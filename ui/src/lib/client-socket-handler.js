@@ -1,6 +1,12 @@
 const messageCallbacks = new Set();
-export function registerSocketListener(onMessage) {
+
+export function addSocketListener(onMessage) {
     messageCallbacks.add(onMessage);
+    return onMessage;
+}
+
+export function removeSocketListener(onMessage) {
+    messageCallbacks.remove(onMessage);
 }
 
 export function onMessage(message) {
