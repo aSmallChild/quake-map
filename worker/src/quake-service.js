@@ -8,11 +8,68 @@ export function getService(env) {
 export class QuakeService {
     constructor(state, env) {
         this.state = state;
+        this.env = env;
+
+        const clientConfig = {
+            min_magnitude: this.env.MIN_MAGNITUDE,
+            max_depth_km: this.env.MAX_DEPTH_KM,
+            highlight_quakes_within: this.env.RECENT_QUAKE_POLL_TIME_MINUTES,
+            search_within: this.env.QUAKE_CACHE_TTL_DAYS,
+        };
+
+        this.cache = new Map();
+        this.recentQuakes = new Set();
+        this.lastQueryTime = new Date();
+        const ips = new Map();
+        const stats = {
+            connected_clients: 0,
+            peak_connected_clients: 0,
+            unique_connections: 0,
+            peak_unique_connections: 0,
+        };
+
+        // todo replace io
+        io.on('connection', socket => {
+            stats.connected_clients++;
+            if (stats.connected_clients > stats.peak_connected_clients) {
+                stats.peak_connected_clients = stats.connected_clients;
+            }
+            const ip = socket.handshake.headers['x-forwarded-for'] || socket.request.connection.remoteAddress;
+            if (ips.has(ip)) {
+                ips.set(ip, ips.get(ip) + 1);
+            } else {
+                ips.set(ip, 1);
+                stats.unique_connections++;
+            }
+            if (stats.unique_connections > stats.peak_unique_connections) {
+                stats.peak_unique_connections = stats.unique_connections;
+            }
+            console.log('Client connected (' + ip + '). Unique/connections: ' + stats.unique_connections + '/' + stats.connected_clients + ' Peak: ' + stats.peak_unique_connections + '/' + stats.peak_connected_clients);
+            socket.emit('config', clientConfig);
+            io.emit('stats', stats);
+
+            const socketRefreshInterval = setInterval(
+                () => socket.emit('all_quakes', this.getAllQuakes()),
+                this.env.FULL_REFRESH_INTERVAL_MINUTES * 60000,
+            );
+            socket.emit('all_quakes', this.getAllQuakes());
+            socket.on('disconnect', () => {
+                const ipCount = ips.get(ip);
+                if (ipCount <= 1) {
+                    ips.delete(ip);
+                    stats.unique_connections--;
+                } else {
+                    ips.set(ip, ipCount - 1);
+                }
+                stats.connected_clients--;
+                console.log('Client disconnected. Total clients: ' + stats.connected_clients + ' Peak: ' + stats.peak_connected_clients);
+                clearInterval(socketRefreshInterval);
+                io.emit('stats', stats);
+            });
+        });
     }
 
-    // Handle HTTP requests from clients.
     async fetch(request) {
-
         // todo handle sockets here
         const url = new URL(request.url);
 
@@ -20,110 +77,49 @@ export class QuakeService {
         // await this.state.storage.put("value", value);
 
         switch (url.pathname) {
-            case "/set_quakes":
-                ++value;
-                break;
-            case "/update_quakes":
-                --value;
-                break;
-            case "/":
-                // Just serve the current value.
-                break;
-            default:
-                return new Response("Not found", {status: 404});
+            case '/sync_quakes':
+                await this.syncQuakes();
+                return new Response('mmkay', {status: 200});
         }
 
-        return new Response(value);
-    }
-}
-
-// syncs earthquake data with clients
-const asd = (server, geonet, stats) => {
-    const io = new Server(server);
-    const ips = {};
-    const clientConfig = {
-        min_magnitude: config.min_magnitude,
-        max_depth_km: config.max_depth_km,
-        highlight_quakes_within: config.recent_quake_poll_time_minutes,
-        search_within: config.quake_cache_ttl_days
-    };
-
-    geonet.onNewQuakes(quakes => io.emit('new_quakes', quakes));
-    geonet.onDeletedQuakeIds(ids => io.emit('old_quakes', ids));
-    io.on('connection', socket => {
-        stats.connected_clients++;
-        if (stats.connected_clients > stats.peak_connected_clients) {
-            stats.peak_connected_clients = stats.connected_clients;
-        }
-        const ip = socket.handshake.headers['x-forwarded-for'] || socket.request.connection.remoteAddress;
-        if (ips.hasOwnProperty(ip)) {
-            ips[ip]++;
-        } else {
-            ips[ip] = 1;
-            stats.unique_connections++;
-        }
-        if (stats.unique_connections > stats.peak_unique_connections) {
-            stats.peak_unique_connections = stats.unique_connections;
-        }
-        console.log('Client connected (' + ip + '). Unique/connections: ' + stats.unique_connections + '/' + stats.connected_clients + ' Peak: ' + stats.peak_unique_connections + '/' + stats.peak_connected_clients);
-        socket.emit('config', clientConfig);
-        io.emit('stats', stats);
-
-        const socketRefreshInterval = setInterval(
-            () => socket.emit('all_quakes', geonet.getAllQuakes()),
-            config.full_refresh_interval_minutes * 60000
-        );
-        socket.emit('all_quakes', geonet.getAllQuakes());
-        socket.on('disconnect', () => {
-            ips[ip]--;
-            if (ips[ip] < 1) {
-                delete ips[ip];
-                stats.unique_connections--;
-            }
-            stats.connected_clients--;
-            console.log('Client disconnected. Total clients: ' + stats.connected_clients + ' Peak: ' + stats.peak_connected_clients);
-            clearInterval(socketRefreshInterval);
-            io.emit('stats', stats);
-        });
-    });
-}
-
-
-
-// todo remove this
-class QuakeServiceREMOVE {
-    constructor(geonet, config, logger) {
-        this.config = config;
-        this.geonet = geonet;
-        this.cache = {};
-        this.recentQuakes = {};
-        this.lastQueryTime = new Date();
-        this.events = new EventEmitter();
+        return new Response('not found', {status: 404});
     }
 
-    getAllQuakes() {
-        return this.cache;
+    async syncQuakes() {
+        let updatedQuakes;
+        if (this.env.FULL_REFRESH_INTERVAL_MINUTES * 60000 > now - this.lastFullRefreshTime) {
+            this.lastFullRefreshTime = new Date(); // todo this should go into storage, not be a local variable
+            updatedQuakes = await this.queryAllQuakes();
+        }
+        else {
+            updatedQuakes = await this.checkForNewQuakes();
+        }
+
+
+        this.syncUpdatedQuakes(updatedQuakes);
+        this.refreshRecentQuakes();
+        const oldQuakeIds = this.expireOldEarthquakes();
+        this.syncRemovedQuakes(oldQuakeIds);
     }
 
-    queryAllQuakes() {
+    async queryAllQuakes() {
         const fromDate = new Date();
-        fromDate.setDate(fromDate.getDate() - this.config.quake_cache_ttl_days);
-        // noinspection JSIgnoredPromiseFromCall
-        this.queryQuakes(fromDate);
+        fromDate.setDate(fromDate.getDate() - this.env.QUAKE_CACHE_TTL_DAYS);
+        return await this.queryQuakes(fromDate);
     }
 
-    checkForNewQuakes() {
-        const fromDate = new Date(this.lastQueryTime.getTime() - this.config.quake_search_time_minutes * 60000);
-        // noinspection JSIgnoredPromiseFromCall
-        this.queryQuakes(fromDate);
+    async checkForNewQuakes() {
+        const fromDate = new Date(this.lastQueryTime.getTime() - this.env.QUAKE_SEARCH_TIME_MINUTES * 60000);
+        return await this.queryQuakes(fromDate);
     }
 
     async queryQuakes(fromDate) {
+        // todo put quakes into storage
         this.lastQueryTime = new Date();
-        const quakes = await searchQuakes(fromDate, this.config.min_magnitude, this.config.max_depth_km);
+        const quakes = await searchQuakes(fromDate, this.env.MIN_MAGNITUDE, this.env.MAX_DEPTH_KM);
         const updatedQuakes = [];
         for (const quake of quakes) {
-            const cachedQuake = this.cache.hasOwnProperty(quake.id) ? this.cache[quake.id] : null;
+            const cachedQuake = this.cache.has(quake.id) ? this.cache[quake.id] : null;
             if (!cachedQuake) {
                 updatedQuakes.push(quake);
                 this.cacheQuake(quake);
@@ -132,24 +128,23 @@ class QuakeServiceREMOVE {
                 updatedQuakes.push(cachedQuake);
             }
         }
-        this.syncUpdatedQuakes(updatedQuakes);
-        this.refreshRecentQuakes();
+        return updatedQuakes;
     }
 
     async refreshQuake(quake) {
-        const quakeSearchPeriod = new Date(this.lastQueryTime.getTime() - this.config.quake_search_time_minutes * 60000);
+        const quakeSearchPeriod = new Date(this.lastQueryTime.getTime() - this.env.QUAKE_SEARCH_TIME_MINUTES * 60000);
         if (quakeSearchPeriod < Date.parse(quake.time)) {
             return; // only poll this quake individually if it is not included in the search
         }
 
         // check if earthquake has expired
-        if (!this.cache.hasOwnProperty(quake.id)) {
+        if (!this.cache.has(quake.id)) {
             this.stopPollingQuake(quake, 'Expired.');
             return;
         }
 
         console.log(`Refreshing quake data for ${quake.id}`);
-        const earthquake = await getQuake(quake);
+        const earthquake = await getQuake(quake.id, quake);
         if (!earthquake) {
             return;
         }
@@ -169,17 +164,21 @@ class QuakeServiceREMOVE {
         }
     }
 
+    getAllQuakes() {
+        return this.cache;
+    }
+
     cacheQuake(quake) {
-        this.cache[quake.id] = quake;
+        this.cache.set(quake.id, quake);
     }
 
     uncacheQuake(quake) {
-        delete this.cache[quake.id];
+        this.cache.delete(quake.id);
     }
 
     stopPollingQuake(quake, reason) {
-        if (this.recentQuakes.hasOwnProperty(quake.id)) {
-            delete this.recentQuakes[quake.id];
+        if (this.recentQuakes.has(quake)) {
+            this.recentQuakes.delete(quake);
             console.log(`Stopped polling quake ${quake.id}: ${reason}`);
             return true;
         }
@@ -187,22 +186,20 @@ class QuakeServiceREMOVE {
     }
 
     refreshRecentQuakes() {
-        const recentPeriod = Date.now() - this.config.recent_quake_poll_time_minutes * 60000;
-        for (const id in this.cache) {
-            if (!this.cache.hasOwnProperty(id)) continue;
-            const quake = this.cache[id];
+        const recentPeriod = Date.now() - this.env.RECENT_QUAKE_POLL_TIME_MINUTES * 60000;
+        for (const quake of this.cache) {
             if (Date.parse(quake.time) < recentPeriod) {
                 this.stopPollingQuake(quake, 'Outside polling period.');
             } else if (quake.quality !== 'best' && quake.quality !== 'deleted') {
                 // only poll quakes that have not been reviewed
                 // best/deleted means quake has been reviewed
                 // quality property is set after querying the quake individually with refreshQuake()
-                this.recentQuakes[quake.id] = quake;
+                this.recentQuakes.add(quake);
             }
         }
 
-        for (const id in this.recentQuakes) {
-            this.refreshQuake(this.recentQuakes[id]);
+        for (const quake of this.recentQuakes) {
+            this.refreshQuake(quake);
         }
     }
 
@@ -210,11 +207,9 @@ class QuakeServiceREMOVE {
         const oldQuakeIds = [];
 
         const fromDate = new Date();
-        fromDate.setDate(fromDate.getDate() - this.config.quake_cache_ttl_days);
+        fromDate.setDate(fromDate.getDate() - this.env.QUAKE_CACHE_TTL_DAYS);
 
-        for (const id in this.cache) {
-            if (!this.cache.hasOwnProperty(id)) continue;
-            const quake = this.cache[id];
+        for (const quake of this.cache) {
             if (quake.time < fromDate) {
                 oldQuakeIds.push(id);
                 this.uncacheQuake(quake);
@@ -225,29 +220,24 @@ class QuakeServiceREMOVE {
             console.log('Earthquakes have expired: ' + oldQuakeIds.join(', '));
         }
 
-        this.syncRemovedQuakes(oldQuakeIds);
         return oldQuakeIds;
-    }
-
-    onNewQuakes(listener) {
-        this.events.on('updated_quakes', listener);
     }
 
     syncUpdatedQuakes(quakes) {
         if (!quakes.length) {
             return;
         }
-        this.events.emit('updated_quakes', quakes);
-    }
-
-    onDeletedQuakeIds(listener) {
-        this.events.on('removed_quake_ids', listener);
+        this.emit('new_quakes', quakes)
     }
 
     syncRemovedQuakes(ids) {
         if (!ids.length) {
             return;
         }
-        this.events.emit('removed_quake_ids', ids);
+        this.emit('old_quakes', ids)
+    }
+
+    emit(event, data) {
+        // todo broadcast to all sockets
     }
 }

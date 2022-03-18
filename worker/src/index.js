@@ -1,4 +1,3 @@
-import getLatestQuakes from './get-latest-quakes.js';
 import {getService, QuakeService} from './quake-service.js';
 
 export default {
@@ -13,6 +12,14 @@ export default {
     }
   },
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(getLatestQuakes(event, env));
+    ctx.waitUntil((async () => {
+      try {
+        const service = getService(env);
+        return await service.fetch('/sync_quakes');
+      } catch (e) {
+        console.error(e);
+        return new Response(e.message, {status: 500})
+      }
+    })());
   },
 }

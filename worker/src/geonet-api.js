@@ -71,7 +71,7 @@ export async function searchQuakes(fromDate, minMagnitude = 0, maxDepth = 0, box
     return quakes;
 }
 
-export async function getQuake(quake) {
+export async function getQuake(id, quake = null) {
     // https://api.geonet.org.nz/quake/2016p862895
     // {
     //     "type": "FeatureCollection",
@@ -90,8 +90,8 @@ export async function getQuake(quake) {
     //     }]
     // }
 
-    const url = urlQuakeQuery + quake.id;
-    let msg = `Fetching quake: ${url}... `;
+    const url = urlQuakeQuery + id;
+    const msg = `Fetching quake: ${url}... `;
     try {
         const res = await fetch(url);
         if (res.status !== 200) {
@@ -100,13 +100,13 @@ export async function getQuake(quake) {
         }
         const json = await res.json();
         const [feature] = json.features;
-        const earthquake = new Quake(quake.id);
-        earthquake.url = quake.url;
-        parseCommonFeatureFields(earthquake, feature);
-        earthquake.time = feature.properties.time;
-        earthquake.quality = feature.properties.quality;
+        quake = quake ?? new Quake(id);
+        quake.url = urlQuakePage + id;
+        parseCommonFeatureFields(quake, feature);
+        quake.time = feature.properties.time;
+        quake.quality = feature.properties.quality;
         console.log(msg);
-        return earthquake;
+        return quake;
     } catch (error) {
         console.error(`${msg} ${error}`);
     }

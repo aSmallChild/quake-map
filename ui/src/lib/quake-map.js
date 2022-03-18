@@ -9,6 +9,10 @@ class QuakeWrapper {
         this.buildQuakeInfoDiv();
     }
 
+    get id() {
+        return this.quake.id;
+    }
+
     set selected(isSelected) {
         this._selected = isSelected;
         this.marker.selected = isSelected;
@@ -74,7 +78,7 @@ export default class QuakeMap {
     constructor(map, markerClass) {
         this.map = map;
         this.markerClass = markerClass;
-        this.markers = {};
+        this.markers = [];
         this.config = {};
         this.colours = {
             list: ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'],
@@ -100,23 +104,29 @@ export default class QuakeMap {
     }
 
     handleEventAllQuakes(allQuakes) {
-        for (const id in allQuakes) {
-            if (allQuakes.hasOwnProperty(id)) this.addQuakeData(allQuakes[id]);
+        const ids = new Set();
+        for (const quake of allQuakes) {
+            this.addQuakeData(quake);
+            ids.add(quake.id);
         }
 
-        for (const id in this.markers) {
-            if (!allQuakes.hasOwnProperty(id)) {
-                this.removeMarker(id);
+        this.markers = this.markers.filter(marker => {
+            if (!ids.has(marker.id)) {
+                marker.destroy();
+                return false;
             }
-        }
+            return true;
+        });
         this.recenterMap();
     }
 
     handleEventOldQuakes(oldQuakesIds) {
-        oldQuakesIds.forEach(id => {
-            if (this.markers.hasOwnProperty(id)) {
-                this.removeMarker(id);
+        this.markers = this.markers.filter(marker => {
+            if (oldQuakesIds.includes(marker.id)) {
+                marker.destroy();
+                return false;
             }
+            return true;
         });
     }
 
@@ -147,10 +157,7 @@ export default class QuakeMap {
             selectedMarker = null,
             /** @var {QuakeWrapper} */
             latestMarker = null;
-        for (const id in this.markers) {
-            if (!this.markers.hasOwnProperty(id)) continue;
-
-            const marker = this.markers[id];
+        for (const marker of this.markers) {
             if (marker.selected) {
                 selectedMarker = marker;
             }
@@ -184,9 +191,8 @@ export default class QuakeMap {
     }
 
     addQuakeData(quakeData) {
-        let marker;
-        if (this.markers.hasOwnProperty(quakeData.id)) {
-            marker = this.markers[quakeData.id];
+        let marker = this.markers.find(m => m.id == quakeData.id);
+        if (marker) {
             marker.quake.fromJSON(quakeData);
         } else {
             const quake = new Quake(quakeData.id);
@@ -194,14 +200,12 @@ export default class QuakeMap {
             quake.recent = this.config.highlight_quakes_within * 60000;
             marker = new QuakeWrapper(quake, this.getNextColour());
             marker.marker = new this.markerClass(this.map, this.config, marker.colour);
-            this.markers[quake.id] = marker;
+            this.markers.push(marker);
             this.quakeInfoContainer.appendChild(marker.infoDiv);
         }
         marker.update();
         marker.marker.addEventListener('click', () => {
-            for (const id in this.markers) {
-                if (!this.markers.hasOwnProperty(id)) continue;
-                const otherMarker = this.markers[id];
+            for (const otherMarker of this.markers) {
                 if (otherMarker == marker) continue;
 
                 otherMarker.selected = false;
@@ -215,7 +219,7 @@ export default class QuakeMap {
 
         marker.infoDiv.addEventListener('mouseover', () => {
             marker.marker.ensureMarkerIsInView(this.map);
-            this.hideAllMarkersExcept(marker.quake.id);
+            this.hideAllMarkersExcept(marker.id);
         });
         marker.infoDiv.addEventListener('mouseout', () => this.showAllMarkers());
         marker.infoDiv.addEventListener('click', () => marker.marker.centerMapOnMarker(this.map));
@@ -226,21 +230,16 @@ export default class QuakeMap {
     }
 
     showAllMarkers() {
-        for (const id in this.markers) {
-            this.markers[id].marker.visible = true;
+        for (const marker of this.markers) {
+            marker.marker.visible = true;
         }
     }
 
     hideAllMarkersExcept(excludedId) {
-        for (const id in this.markers) {
-            if (id != excludedId && this.markers.hasOwnProperty(id)) {
-                this.markers[id].marker.visible = false;
+        for (const marker of this.markers) {
+            if (marker.id != excludedId) {
+                marker.marker.visible = false;
             }
         }
-    }
-
-    removeMarker(id) {
-        this.markers[id].destroy();
-        delete this.markers[id];
     }
 }

@@ -1,88 +1,39 @@
+const updatableFields = ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
+
 export default class Quake {
-    static get updatableFields() {
-        return ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
-    }
+    #id;
+    #time;
+    #recentForSeconds = 300;
+    url;
+    modified;
+    quality;
+    depth;
+    mag;
+    lat;
+    long;
 
     constructor(id) {
-        this._id = id;
-        this.url = '';
-        this._recentForSeconds = 300;
+        this.#id = id;
     }
 
     get id() {
-        return this._id;
-    }
-
-    get long() {
-        return this._long;
-    }
-
-    set long(value) {
-        this._long = value;
-    }
-
-    get lat() {
-        return this._lat;
-    }
-
-    set lat(value) {
-        this._lat = value;
-    }
-
-    get mag() {
-        return this._mag;
-    }
-
-    set mag(value) {
-        this._mag = value;
+        return this.#id;
     }
 
     get time() {
-        return this._time;
+        return this.#time;
     }
 
     set time(value) {
-        this._time = new Date(value);
-    }
-
-    get depth() {
-        return this._depth;
-    }
-
-    set depth(value) {
-        this._depth = value;
-    }
-
-    get quality() {
-        return this._quality;
-    }
-
-    set quality(value) {
-        this._quality = value;
-    }
-
-    get modified() {
-        return this._modified;
-    }
-
-    set modified(value) {
-        this._modified = value;
-    }
-
-    get url() {
-        return this._url;
-    }
-
-    set url(value) {
-        this._url = value;
+        this.#time = new Date(value);
     }
 
     set recent(seconds) {
-        this._recentForSeconds = seconds;
+        this.#recentForSeconds = seconds;
     }
 
     get recent() {
-        const recentPeriod = Date.now() - this._recentForSeconds;
+        const recentPeriod = Date.now() - this.#recentForSeconds;
         return recentPeriod < this.time.getTime();
     }
 
@@ -90,7 +41,7 @@ export default class Quake {
         if (this.id != that.id) {
             return false;
         }
-        for (const field of Quake.updatableFields) {
+        for (const field of updatableFields) {
             if (that[field] !== null && this[field] != that[field]) {
                 return false;
             }
@@ -99,7 +50,7 @@ export default class Quake {
     }
 
     update(that) {
-        for (const field of Quake.updatableFields) {
+        for (const field of updatableFields) {
             if (that[field] !== null && this[field] != that[field]) {
                 this[field] = that[field];
             }
@@ -108,20 +59,17 @@ export default class Quake {
 
     // noinspection JSUnusedGlobalSymbols
     toJSON() {
-        const obj = {
-            id: this.id,
-            url: this.url
-        };
-        for (const field of Quake.updatableFields) {
-            obj[field] = this[field];
-        }
-        return obj;
+        return Object.fromEntries([
+            ['id', this.id],
+            ['url', this.url],
+            ...updatableFields.map(field => [field, this[field]])
+        ]);
     }
 
     fromJSON(obj) {
-        this._id = obj.id;
+        this.#id = obj.id;
         this.url = obj.url;
-        for (const field of Quake.updatableFields) {
+        for (const field of updatableFields) {
             this[field] = obj[field];
         }
     }
