@@ -1,4 +1,4 @@
-import {Quake} from '../../ui/src/lib/quake.js';
+import Quake from '../../ui/src/lib/quake.js';
 
 const urlQuakeSearch = 'https://quakesearch.geonet.org.nz/geojson';
 const urlQuakePage = 'https://www.geonet.org.nz/earthquake/';
@@ -38,7 +38,7 @@ export async function searchQuakes(fromDate, minMagnitude = 0, maxDepth = 0, box
     //         }
     //     }]
     // }
-    let url = `${urlQuakeSearch}?&startdate=${fromDate.toISOString().split('.')[0]}`;
+    let url = `${urlQuakeSearch}?startdate=${fromDate.toISOString()}`;
     if (minMagnitude) {
         url += `&minmag=${minMagnitude}`;
     }

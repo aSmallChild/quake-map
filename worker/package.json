@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c",
+    "dev": "wrangler dev",
     "publish": "wrangler publish"
   },
   "devDependencies": {

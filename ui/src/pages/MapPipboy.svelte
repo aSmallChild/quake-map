@@ -2,12 +2,19 @@
     import {createMap} from '../lib/map.js';
     import {onQuakeMap, mapStyleBuilder} from '../lib/map-style-pipboy.js';
     import {onMount} from 'svelte';
+    import {addSocketListener, sendMessage} from '../lib/client-socket-handler.js';
 
     let quakeInfoContainer, mapContainer;
 
-    onMount(() => {
+    onMount(async () => {
         document.body.classList.add('pipboy');
-        createMap(mapContainer, quakeInfoContainer, mapStyleBuilder, onQuakeMap);
+        await createMap(mapContainer, quakeInfoContainer, mapStyleBuilder, onQuakeMap);
+        sendMessage('ready', null);
+        addSocketListener(event => {
+            if (event == 'open') {
+                sendMessage('ready');
+            }
+        })
     });
 </script>
 

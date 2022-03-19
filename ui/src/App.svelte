@@ -4,7 +4,7 @@
     import Stats from './components/Stats.svelte';
     import MapPipboy from './pages/MapPipboy.svelte';
     import MapDefault from './pages/MapDefault.svelte';
-    import {addSocketListener} from './lib/client-socket-handler.js';
+    import {addSocketListener, connectSocket} from './lib/client-socket-handler.js';
 
     let stats = {unique_connections: 0, connected_clients: 0};
 
@@ -13,6 +13,7 @@
             stats = data;
         }
     });
+    connectSocket();
 
 </script>
 

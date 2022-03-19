@@ -1,14 +1,15 @@
-import {getService, QuakeService} from './quake-service.js';
+import {getService} from './quake-service.js';
+
+export {QuakeService} from './quake-service.js';
 
 export default {
-  QuakeService,
   async fetch(request, env) {
     try {
       const service = getService(env);
-      return await service.fetch(request.url);
+      return await service.fetch(request);
     } catch (e) {
       console.error(e);
-      return new Response(e.message, {status: 500})
+      return new Response(e, {status: 500})
     }
   },
   async scheduled(event, env, ctx) {
@@ -17,8 +18,8 @@ export default {
         const service = getService(env);
         return await service.fetch('/sync_quakes');
       } catch (e) {
-        console.error(e);
-        return new Response(e.message, {status: 500})
+        console.error(e.message, e.stack);
+        return new Response(e, {status: 500})
       }
     })());
   },
