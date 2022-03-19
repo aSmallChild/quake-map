@@ -1,3 +1,4 @@
+import Quake from '../../ui/src/lib/quake.js';
 import {getQuake, searchQuakes} from './geonet-api.js';
 
 export function getService(env) {
@@ -16,19 +17,43 @@ export class QuakeService {
             search_within: this.env.QUAKE_CACHE_TTL_DAYS,
         };
 
+        this.quakes = [];
         this.cache = new Map();
         this.recentQuakes = new Set();
-        this.lastQueryTime = new Date();
-        this.lastFullRefreshTime = null;
         this.ips = new Map();
+
+        this.lastQueryTime = null;
+        this.lastFullRefreshTime = null;
 
         this.maxClients = 0;
         this.maxUniqueConnections = 0;
         this.sessions = [];
+
+        this.state.blockConcurrencyWhile(async () => {
+            const lastQueryTimestamp = await this.state.storage.get('last-query-time');
+            this.lastQueryTime = lastQueryTimestamp ? new Date(lastQueryTimestamp) : new Date();
+            const lastFullRefreshTimestamp = await this.state.storage.get('last-full-refresh');
+            this.lastQueryTime = lastFullRefreshTimestamp ? new Date(lastFullRefreshTimestamp) : new Date();
+
+            const quakesJSON = await this.state.storage.get('quakes');
+            if (!quakesJSON) return;
+            console.log(`Retrieved ${quakesJSON.length} quakes from store.`);
+            try {
+                for (const quakeJSON of quakesJSON) {
+                    console.log(quakeJSON);
+                    const quake = Quake.fromJSON(JSON.parse(quakeJSON));
+                    this.cacheQuake(quake);
+                }
+            }
+            catch (e) {
+                console.error(e.message, e.stack);
+            }
+        });
     }
 
     get stats() {
         return {
+            quakes: this.quakes.length,
             connected_clients: this.sessions.length,
             connected_clients_peak: this.maxClients,
             unique_connections: this.ips.size,
@@ -132,13 +157,12 @@ export class QuakeService {
             return this.handleWebsocketUpgrade(request);
         }
 
-        // let value = await this.state.storage.get("value") || 0;
-        // await this.state.storage.put("value", value);
-
         const url = new URL(request.url);
         switch (url.pathname) {
             case '/session':
                 return new Response('Expected Upgrade: websocket', {status: 426});
+            case '/stats':
+                return jsonResponse(this.stats);
             case '/quakes':
                 return jsonResponse(this.getAllQuakes());
             case '/sync_quakes':
@@ -150,17 +174,25 @@ export class QuakeService {
 
     async syncQuakes() {
         let updatedQuakes;
-        if (!this.lastFullRefreshTime || this.env.FULL_REFRESH_INTERVAL_MINUTES * 60000 > Date.now() - this.lastFullRefreshTime) {
+        if (!this.lastQueryTime || !this.lastFullRefreshTime || this.env.FULL_REFRESH_INTERVAL_MINUTES * 60000 > Date.now() - this.lastFullRefreshTime) {
             updatedQuakes = await this.queryAllQuakes();
-            this.lastFullRefreshTime = new Date(); // todo this should go into storage, not be a local variable so if the object dies it doesn't query twice within the hour when it starts up again
+            this.lastFullRefreshTime = new Date();
+            await this.state.storage.put('last-full-refresh', this.lastFullRefreshTime.getTime());
         } else {
             updatedQuakes = await this.checkForNewQuakes();
         }
+
+        this.lastQueryTime = new Date();
+        await this.state.storage.put('last-query-time', this.lastQueryTime.getTime());
 
         this.syncUpdatedQuakes(updatedQuakes);
         this.refreshRecentQuakes();
         const oldQuakeIds = this.expireOldEarthquakes();
         this.syncRemovedQuakes(oldQuakeIds);
+
+        console.log(`Storing ${this.quakes.length} quakes...`);
+        await this.state.storage.put('quakes', this.quakes.map(quake => JSON.stringify(quake)));
+
         return {
             updatedQuakes,
             oldQuakeIds,
@@ -179,8 +211,6 @@ export class QuakeService {
     }
 
     async queryQuakes(fromDate) {
-        // todo put quakes into storage
-        this.lastQueryTime = new Date();
         const quakes = await searchQuakes(fromDate, this.env.MIN_MAGNITUDE, this.env.MAX_DEPTH_KM);
         const updatedQuakes = [];
         for (const quake of quakes) {
@@ -230,15 +260,24 @@ export class QuakeService {
     }
 
     getAllQuakes() {
-        return this.cache;
+        return this.quakes;
     }
 
     cacheQuake(quake) {
         this.cache.set(quake.id, quake);
+        this.quakes.push(quake);
     }
 
-    uncacheQuake(quake) {
-        this.cache.delete(quake.id);
+    uncacheQuake(quakeToRemove) {
+        this.cache.delete(quakeToRemove.id);
+        this.quakes = this.quakes.filter(quake => quake.id != quakeToRemove.id);
+    }
+
+    uncacheQuakesById(oldQuakeIds) {
+        for (const id in oldQuakeIds) {
+            this.cache.delete(id);
+        }
+        this.quakes = this.quakes.filter(quake => !oldQuakeIds.includes(quake.id));
     }
 
     stopPollingQuake(quake, reason) {
@@ -252,7 +291,7 @@ export class QuakeService {
 
     refreshRecentQuakes() {
         const recentPeriod = Date.now() - this.env.RECENT_QUAKE_POLL_TIME_MINUTES * 60000;
-        for (const [, quake] of this.cache) {
+        for (const quake of this.quakes) {
             if (quake.time.getTime() < recentPeriod) {
                 this.stopPollingQuake(quake, 'Outside polling period.');
             } else if (quake.quality !== 'best' && quake.quality !== 'deleted') {
@@ -274,12 +313,13 @@ export class QuakeService {
         const fromDate = new Date();
         fromDate.setDate(fromDate.getDate() - this.env.QUAKE_CACHE_TTL_DAYS);
 
-        for (const [id, quake] of this.cache) {
+        for (const quake of this.quakes) {
             if (quake.time < fromDate) {
-                oldQuakeIds.push(id);
-                this.uncacheQuake(quake);
+                oldQuakeIds.push(quake.id);
             }
         }
+
+        this.uncacheQuakesById(oldQuakeIds);
 
         if (oldQuakeIds.length) {
             console.log('Earthquakes have expired: ' + oldQuakeIds.join(', '));

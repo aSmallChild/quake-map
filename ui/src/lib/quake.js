@@ -66,12 +66,13 @@ export default class Quake {
         ]);
     }
 
-    fromJSON(obj) {
-        this.#id = obj.id;
-        this.url = obj.url;
+    static fromJSON(obj) {
+        const quake = new this.constructor(obj.id)
+        quake.url = obj.url;
         for (const field of updatableFields) {
-            this[field] = obj[field];
+            quake[field] = obj[field];
         }
+        return quake;
     }
 }
 

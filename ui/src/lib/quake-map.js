@@ -193,10 +193,10 @@ export default class QuakeMap {
     addQuakeData(quakeData) {
         let marker = this.markers.find(m => m.id == quakeData.id);
         if (marker) {
-            marker.quake.fromJSON(quakeData);
+            marker.quake.update(quakeData);
         } else {
-            const quake = new Quake(quakeData.id);
-            quake.fromJSON(quakeData);
+
+            const quake = Quake.fromJSON(quakeData);
             quake.recent = (this.config?.highlight_quakes_within ?? 5) * 60000;
             marker = new QuakeWrapper(quake, this.getNextColour());
             marker.marker = new this.markerClass(this.map, this.config, marker.colour);
