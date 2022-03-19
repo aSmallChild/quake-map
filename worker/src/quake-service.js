@@ -40,9 +40,7 @@ export class QuakeService {
             console.log(`Retrieved ${quakesJSON.length} quakes from store.`);
             try {
                 for (const quakeJSON of quakesJSON) {
-                    console.log(quakeJSON);
-                    const quake = Quake.fromJSON(JSON.parse(quakeJSON));
-                    this.cacheQuake(quake);
+                    this.cacheQuake(Quake.fromJSON(quakeJSON));
                 }
             }
             catch (e) {
@@ -191,7 +189,7 @@ export class QuakeService {
         this.syncRemovedQuakes(oldQuakeIds);
 
         console.log(`Storing ${this.quakes.length} quakes...`);
-        await this.state.storage.put('quakes', this.quakes.map(quake => JSON.stringify(quake)));
+        await this.state.storage.put('quakes', this.quakes.map(quake => quake.toJSON()));
 
         return {
             updatedQuakes,

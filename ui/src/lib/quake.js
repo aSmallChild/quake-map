@@ -62,12 +62,12 @@ export default class Quake {
         return Object.fromEntries([
             ['id', this.id],
             ['url', this.url],
-            ...updatableFields.map(field => [field, this[field]])
+            ...updatableFields.map(field => [field, this[field]]),
         ]);
     }
 
     static fromJSON(obj) {
-        const quake = new this.constructor(obj.id)
+        const quake = new Quake(obj.id);
         quake.url = obj.url;
         for (const field of updatableFields) {
             quake[field] = obj[field];
