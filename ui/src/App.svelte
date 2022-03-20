@@ -5,6 +5,7 @@
     import MapPipboy from './pages/MapPipboy.svelte';
     import MapDefault from './pages/MapDefault.svelte';
     import {addSocketListener, connectSocket} from './lib/client-socket-handler.js';
+    import {onMount} from 'svelte';
 
     let stats = {unique_connections: 0, connected_clients: 0};
 
@@ -13,6 +14,16 @@
             stats = data;
         }
     });
+
+    onMount(() => {
+        if (import.meta.env.VITE_CLOUDFLARE_ANALYTICS_KEY) {
+            const script = document.createElement('script');
+            script.src = '//static.cloudflareinsights.com/beacon.min.js';
+            script.dataset.CfBeacon = `{"token": "${import.meta.env.VITE_CLOUDFLARE_ANALYTICS_KEY}"}`;
+            document.head.appendChild(script);
+        }
+    });
+
     connectSocket();
 
 </script>
