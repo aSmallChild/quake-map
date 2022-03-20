@@ -7,10 +7,10 @@
 
     onMount(async () => {
         await createMap(mapContainer, quakeInfoContainer);
-        sendMessage('ready', null);
+        sendMessage('sync');
         addSocketListener(event => {
             if (event == 'open') {
-                sendMessage('ready');
+                sendMessage('sync');
             }
         })
     });

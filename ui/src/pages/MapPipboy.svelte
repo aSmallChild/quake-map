@@ -9,10 +9,10 @@
     onMount(async () => {
         document.body.classList.add('pipboy');
         await createMap(mapContainer, quakeInfoContainer, mapStyleBuilder, onQuakeMap);
-        sendMessage('ready', null);
+        sendMessage('sync');
         addSocketListener(event => {
             if (event == 'open') {
-                sendMessage('ready');
+                sendMessage('sync');
             }
         })
     });

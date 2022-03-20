@@ -1,6 +1,8 @@
 import Quake from '../../ui/src/lib/quake.js';
 import {getQuake, searchQuakes} from './geonet-api.js';
 
+const sessionHealthCheckIntervalMs = 600000;
+
 export function getService(env) {
     return env.QUAKE_SERVICE.get(env.QUAKE_SERVICE.idFromName('GEONET'));
 }
@@ -38,13 +40,8 @@ export class QuakeService {
             const quakesJSON = await this.state.storage.get('quakes');
             if (!quakesJSON) return;
             console.log(`Retrieved ${quakesJSON.length} quakes from store.`);
-            try {
-                for (const quakeJSON of quakesJSON) {
-                    this.cacheQuake(Quake.fromJSON(quakeJSON));
-                }
-            }
-            catch (e) {
-                console.error(e.message, e.stack);
+            for (const quakeJSON of quakesJSON) {
+                this.cacheQuake(Quake.fromJSON(quakeJSON));
             }
         });
     }
@@ -72,6 +69,10 @@ export class QuakeService {
     handleSession(request, socket) {
         const session = {
             quit: false,
+            lastMessageTime: Date.now(),
+            ping() {
+                this.emit('ping', Date.now());
+            },
             emit(event, data) {
                 this.send([event, data]);
             },
@@ -80,11 +81,16 @@ export class QuakeService {
                     if (this.quit) return;
                     if (typeof data !== 'string') data = JSON.stringify(data);
                     socket.send(data);
+                    this.lastMessageTime = Date.now();
                 } catch (err) {
                     console.error('failed to send message to socket');
                     console.error(err);
                     closeOrErrorHandler();
                 }
+            },
+            close() {
+                socket.close();
+                closeOrErrorHandler();
             },
         };
         this.sessions.push(session);
@@ -108,15 +114,12 @@ export class QuakeService {
                     socket.close(1011, 'WebSocket broken.');
                     return;
                 }
+                session.lastMessageTime = Date.now();
                 const [event, data] = JSON.parse(message.data);
                 switch (event) {
                     case 'ping':
                         const now = Date.now();
-                        session.emit('pong', {
-                            then: data,
-                            now,
-                            diff: now - data,
-                        });
+                        session.emit('pong', {then: data, now, diff: now - data});
                         return;
                     case 'sync':
                         session.emit('config', this.clientConfig);
@@ -165,6 +168,20 @@ export class QuakeService {
                 return jsonResponse(this.getAllQuakes());
             case '/sync_quakes':
                 return jsonResponse(await this.syncQuakes());
+            case '/reset':
+                this.cache.clear();
+                this.quakes = [];
+                await this.state.storage.delete('quakes');
+                // const oldSessions = this.sessions;
+                // this.sessions = [];
+                // for (const session of oldSessions) {
+                //     try {
+                //         session.close();
+                //     } catch (e) {
+                //         console.error('Error while closing session', e.message);
+                //     }
+                // }
+                return new Response('cache cleared', {status: 200});
         }
 
         return new Response('not found', {status: 404});
@@ -190,6 +207,8 @@ export class QuakeService {
 
         console.log(`Storing ${this.quakes.length} quakes...`);
         await this.state.storage.put('quakes', this.quakes.map(quake => quake.toJSON()));
+
+        this.sessionHealthCheck();
 
         return {
             updatedQuakes,
@@ -344,6 +363,15 @@ export class QuakeService {
         const message = JSON.stringify([event, data]);
         for (const session of this.sessions) {
             session.send(message);
+        }
+    }
+
+    sessionHealthCheck() {
+        const now = Date.now();
+        for (const session of this.sessions) {
+            if (now - session.lastMessageTime > sessionHealthCheckIntervalMs) {
+                session.ping();
+            }
         }
     }
 }

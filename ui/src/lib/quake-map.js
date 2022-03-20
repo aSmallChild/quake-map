@@ -195,7 +195,6 @@ export default class QuakeMap {
         if (marker) {
             marker.quake.update(quakeData);
         } else {
-
             const quake = Quake.fromJSON(quakeData);
             quake.recent = (this.config?.highlight_quakes_within ?? 5) * 60000;
             marker = new QuakeWrapper(quake, this.getNextColour());
