@@ -67,7 +67,7 @@ export function connectSocket(host = import.meta.env.VITE_API_HOST) {
             handleMessage(['close', null]);
             disconnectSocket();
             console.log('Socket closed, reconnecting...');
-            reconnectSocket(hostUrl);
+            reconnectSocket(host);
         });
         return true;
     } catch (err) {
