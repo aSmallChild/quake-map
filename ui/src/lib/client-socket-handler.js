@@ -41,8 +41,7 @@ export function connectSocket(host = import.meta.env.VITE_API_HOST) {
     disconnectSocket();
     try {
         const url = new URL(window.location);
-        host = host ?? url.host;
-        const hostUrl = (url.protocol === 'http:' ? 'ws://' : 'wss://') + host + '/session';
+        const hostUrl = (url.protocol === 'http:' ? 'ws://' : 'wss://') + (host || url.host) + '/session';
         socket = new WebSocket(hostUrl);
         socket.addEventListener('open', () => {
             cancelReconnect();

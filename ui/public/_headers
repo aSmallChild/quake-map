@@ -1,5 +1,5 @@
 /
-    Access-Control-Allow-Origin: https://cloudflareinsights.com/cdn-cgi/rum/
+    Access-Control-Allow-Origin: https://cloudflareinsights.com/cdn-cgi/rum
 
 /pipboy
     Access-Control-Allow-Origin: https://cloudflareinsights.com/cdn-cgi/rum
