@@ -1,0 +1,23 @@
+{
+  "name": "ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "pages": "wrangler pages dev ./dist",
+    "pages-do": "wrangler pages dev dist -o GEONET=Geonet",
+    "pages-waiting-for-proxy-and-mounts-to-work": "wrangler pages dev dist --mount worker=../worker -o GEONET=Geonet@worker --proxy 3000 -- vite"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
+    "sass": "^1.49.9",
+    "svelte": "^3.44.0",
+    "svelte-preprocess": "^4.10.4",
+    "vite": "^2.8.0",
+    "wrangler": "^0.0.17",
+    "svelte-navigator": "^3.1.5"
+  }
+}
