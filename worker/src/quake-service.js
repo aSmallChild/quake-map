@@ -84,7 +84,7 @@ export class QuakeService {
                     this.lastMessageTime = Date.now();
                 } catch (err) {
                     console.error('failed to send message to socket');
-                    console.error(err);
+                    console.error(err.message);
                     closeOrErrorHandler();
                 }
             },
@@ -129,7 +129,7 @@ export class QuakeService {
                 }
             } catch (err) {
                 console.error('error while handling socket message');
-                console.error(err);
+                console.error(err.message);
             }
         });
         const closeOrErrorHandler = () => {
@@ -149,42 +149,49 @@ export class QuakeService {
     }
 
     async fetch(request) {
-        const upgradeHeader = request.headers.get('Upgrade');
-        if (upgradeHeader) {
-            if (upgradeHeader !== 'websocket') {
-                return new Response('Expected Upgrade: websocket.', {status: 426});
+        try {
+            const upgradeHeader = request.headers.get('Upgrade');
+            if (upgradeHeader) {
+                if (upgradeHeader !== 'websocket') {
+                    return new Response('Expected Upgrade: websocket.', {status: 426});
+                }
+
+                return this.handleWebsocketUpgrade(request);
             }
 
-            return this.handleWebsocketUpgrade(request);
-        }
+            const url = new URL(request.url);
+            switch (url.pathname) {
+                case '/session':
+                    return new Response('Expected Upgrade: websocket', {status: 426});
+                case '/stats':
+                    return jsonResponse(this.stats);
+                case '/quakes':
+                    return jsonResponse(this.getAllQuakes());
+                case '/sync_quakes':
+                    return jsonResponse(await this.syncQuakes());
+                case '/reset':
+                    this.cache.clear();
+                    this.quakes = [];
+                    await this.state.storage.delete('quakes');
+                    // const oldSessions = this.sessions;
+                    // this.sessions = [];
+                    // for (const session of oldSessions) {
+                    //     try {
+                    //         session.close();
+                    //     } catch (e) {
+                    //         console.error('Error while closing session', e.message);
+                    //     }
+                    // }
+                    return new Response('cache cleared', {status: 200});
+            }
 
-        const url = new URL(request.url);
-        switch (url.pathname) {
-            case '/session':
-                return new Response('Expected Upgrade: websocket', {status: 426});
-            case '/stats':
-                return jsonResponse(this.stats);
-            case '/quakes':
-                return jsonResponse(this.getAllQuakes());
-            case '/sync_quakes':
-                return jsonResponse(await this.syncQuakes());
-            case '/reset':
-                this.cache.clear();
-                this.quakes = [];
-                await this.state.storage.delete('quakes');
-                // const oldSessions = this.sessions;
-                // this.sessions = [];
-                // for (const session of oldSessions) {
-                //     try {
-                //         session.close();
-                //     } catch (e) {
-                //         console.error('Error while closing session', e.message);
-                //     }
-                // }
-                return new Response('cache cleared', {status: 200});
+            return new Response('not found', {status: 404});
         }
-
-        return new Response('not found', {status: 404});
+        catch (err) {
+            console.error('failed to handle request');
+            console.error(err.message);
+            return new Response('server failed', {status: 500});
+        }
     }
 
     async syncQuakes() {
