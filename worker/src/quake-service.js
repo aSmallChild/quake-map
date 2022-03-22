@@ -133,16 +133,21 @@ export class QuakeService {
             }
         });
         const closeOrErrorHandler = () => {
-            session.quit = true;
-            this.sessions = this.sessions.filter(s => s !== session);
+            try {
+                session.quit = true;
+                this.sessions = this.sessions.filter(s => s !== session);
 
-            const ipCount = this.ips.get(ip);
-            if (ipCount <= 1) {
-                this.ips.delete(ip);
-            } else {
-                this.ips.set(ip, ipCount - 1);
+                const ipCount = this.ips.get(ip);
+                if (ipCount <= 1) {
+                    this.ips.delete(ip);
+                } else {
+                    this.ips.set(ip, ipCount - 1);
+                }
+                this.emit('stats', this.stats);
+            } catch (err) {
+                console.error('error while closing socket');
+                console.error(err.message);
             }
-            this.emit('stats', this.stats);
         };
         socket.addEventListener('close', closeOrErrorHandler);
         socket.addEventListener('error', closeOrErrorHandler);

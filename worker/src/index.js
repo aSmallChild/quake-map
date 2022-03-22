@@ -16,7 +16,7 @@ export default {
     ctx.waitUntil((async () => {
       try {
         const service = getService(env);
-        return await service.fetch('/sync_quakes');
+        return await service.fetch('https://.../sync_quakes');
       } catch (e) {
         console.error(e.message, e.stack);
         return new Response(e, {status: 500})
