@@ -9,15 +9,33 @@
     "preview": "vite preview",
     "pages": "wrangler pages dev ./dist",
     "pages-do": "wrangler pages dev dist -o GEONET=Geonet",
-    "pages-waiting-for-proxy-and-mounts-to-work": "wrangler pages dev dist --mount worker=../worker -o GEONET=Geonet@worker --proxy 3000 -- vite"
+    "pages-waiting-for-proxy-and-mounts-to-work": "wrangler pages dev dist --mount worker=../worker -o GEONET=Geonet@worker --proxy 3000 -- vite",
+    "test": "jest test"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.16.11",
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
+    "@testing-library/jest-dom": "^5.16.3",
+    "@testing-library/svelte": "^3.1.0",
+    "babel-jest": "^27.5.1",
+    "jest": "^27.5.1",
     "sass": "^1.49.9",
     "svelte": "^3.44.0",
+    "svelte-jester": "^2.3.2",
+    "svelte-navigator": "^3.1.5",
     "svelte-preprocess": "^4.10.4",
     "vite": "^2.8.0",
-    "wrangler": "^0.0.17",
-    "svelte-navigator": "^3.1.5"
+    "wrangler": "^0.0.17"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      "^.+\\.svelte$": "svelte-jester"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "svelte"
+    ],
+    "setupFilesAfterEnv": ["@testing-library/jest-dom/extend-expect"]
   }
 }
