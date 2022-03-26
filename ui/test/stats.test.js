@@ -7,9 +7,7 @@ import Stats from '../src/components/Stats.svelte';
 
 test('should render', () => {
     const stats = {unique_connections: 12, connected_clients: 52};
-    // const results = render(Stats, {props: {stats, 'data-id': 123}});
-    const results = render(Stats, {props: {stats}});
-
-    expect(results.getByText(/52\s+clients/)).toBeTruthy();
-    expect(results.getByText(/12\s+viewers/)).toBeTruthy();
+    render(Stats, {props: {stats}});
+    const div = document.querySelector('div.stats');
+    expect(div.textContent).toEqual('52 clients 12 viewers');
 });

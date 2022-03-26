@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.11",
+    "@cloudflare/wrangler": "^1.19.11",
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
     "@testing-library/jest-dom": "^5.16.3",
     "@testing-library/svelte": "^3.1.0",
@@ -24,8 +25,7 @@
     "svelte-jester": "^2.3.2",
     "svelte-navigator": "^3.1.5",
     "svelte-preprocess": "^4.10.4",
-    "vite": "^2.8.0",
-    "wrangler": "^0.0.17"
+    "vite": "^2.8.0"
   },
   "jest": {
     "transform": {
@@ -36,6 +36,8 @@
       "js",
       "svelte"
     ],
-    "setupFilesAfterEnv": ["@testing-library/jest-dom/extend-expect"]
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-dom/extend-expect"
+    ]
   }
 }

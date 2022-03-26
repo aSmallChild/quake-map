@@ -42,7 +42,16 @@ export default class Quake {
             return false;
         }
         for (const field of updatableFields) {
-            if (that[field] !== null && this[field] != that[field]) {
+            if (that[field] === null) {
+                continue;
+            }
+
+            if (field == 'time') {
+                if (!this.time || this.time.getTime() != that.time.getTime()) {
+                    return false;
+                }
+            }
+            else if (this[field] != that[field]) {
                 return false;
             }
         }

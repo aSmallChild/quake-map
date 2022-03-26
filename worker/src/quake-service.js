@@ -123,7 +123,6 @@ export class QuakeService {
                         return;
                     case 'sync':
                         session.emit('config', this.clientConfig);
-                        session.emit('stats', this.stats);
                         session.emit('all_quakes', this.getAllQuakes());
                         return;
                 }
