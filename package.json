@@ -1,24 +1,24 @@
 {
-  "name": "ui",
+  "name": "quake-map",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "pages": "wrangler pages dev ./dist",
-    "pages-do": "wrangler pages dev dist -o GEONET=Geonet",
-    "pages-waiting-for-proxy-and-mounts-to-work": "wrangler pages dev dist --mount worker=../worker -o GEONET=Geonet@worker --proxy 3000 -- vite",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "pages:dev": "wrangler pages dev dist --live-reload",
+    "pages:deploy": "npm run build && wrangler pages deploy dist",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy"
   },
   "dependencies": {
     "svelte": "^5.45.5",
     "svelte-routing": "^2.13.0"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.28.5",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/svelte": "^5.2.9",

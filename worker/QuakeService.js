@@ -1,11 +1,7 @@
-import Quake from '../../ui/src/lib/quake.js';
-import {getQuake, searchQuakes} from './geonet-api.js';
+import Quake from '../src/lib/quake.js';
+import { getQuake, searchQuakes } from './geonet-api.js';
 
 const sessionHealthCheckIntervalMs = 600000;
-
-export function getService(env) {
-    return env.QUAKE_SERVICE.get(env.QUAKE_SERVICE.idFromName('GEONET'));
-}
 
 export class QuakeService {
     constructor(state, env) {
@@ -35,10 +31,12 @@ export class QuakeService {
             const lastQueryTimestamp = await this.state.storage.get('last-query-time');
             this.lastQueryTime = lastQueryTimestamp ? new Date(lastQueryTimestamp) : new Date();
             const lastFullRefreshTimestamp = await this.state.storage.get('last-full-refresh');
-            this.lastQueryTime = lastFullRefreshTimestamp ? new Date(lastFullRefreshTimestamp) : new Date();
+            this.lastFullRefreshTime = lastFullRefreshTimestamp ? new Date(lastFullRefreshTimestamp) : new Date();
 
             const quakesJSON = await this.state.storage.get('quakes');
-            if (!quakesJSON) return;
+            if (!quakesJSON) {
+                return;
+            }
             console.log(`Retrieved ${quakesJSON.length} quakes from store.`);
             for (const quakeJSON of quakesJSON) {
                 this.cacheQuake(Quake.fromJSON(quakeJSON));
@@ -57,7 +55,7 @@ export class QuakeService {
     }
 
     handleWebsocketUpgrade(request) {
-        const {0: client, 1: server} = new WebSocketPair();
+        const { 0: client, 1: server } = new WebSocketPair();
         server.accept();
         this.handleSession(request, server);
         return new Response(null, {
@@ -78,11 +76,16 @@ export class QuakeService {
             },
             send(data) {
                 try {
-                    if (this.quit) return;
-                    if (typeof data !== 'string') data = JSON.stringify(data);
+                    if (this.quit) {
+                        return;
+                    }
+                    if (typeof data !== 'string') {
+                        data = JSON.stringify(data);
+                    }
                     socket.send(data);
                     this.lastMessageTime = Date.now();
-                } catch (err) {
+                }
+                catch (err) {
                     console.error('failed to send message to socket');
                     console.error(err.message);
                     closeOrErrorHandler();
@@ -100,7 +103,8 @@ export class QuakeService {
         const ip = request.headers.get('CF-Connecting-IP');
         if (this.ips.has(ip)) {
             this.ips.set(ip, this.ips.get(ip) + 1);
-        } else {
+        }
+        else {
             this.ips.set(ip, 1);
         }
         if (this.ips.size > this.maxUniqueConnections) {
@@ -119,14 +123,15 @@ export class QuakeService {
                 switch (event) {
                     case 'ping':
                         const now = Date.now();
-                        session.emit('pong', {then: data, now, diff: now - data});
+                        session.emit('pong', { then: data, now, diff: now - data });
                         return;
                     case 'sync':
                         session.emit('config', this.clientConfig);
                         session.emit('all_quakes', this.getAllQuakes());
                         return;
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 console.error('error while handling socket message');
                 console.error(err.message);
             }
@@ -139,11 +144,13 @@ export class QuakeService {
                 const ipCount = this.ips.get(ip);
                 if (ipCount <= 1) {
                     this.ips.delete(ip);
-                } else {
+                }
+                else {
                     this.ips.set(ip, ipCount - 1);
                 }
                 this.emit('stats', this.stats);
-            } catch (err) {
+            }
+            catch (err) {
                 console.error('error while closing socket');
                 console.error(err.message);
             }
@@ -157,7 +164,7 @@ export class QuakeService {
             const upgradeHeader = request.headers.get('Upgrade');
             if (upgradeHeader) {
                 if (upgradeHeader !== 'websocket') {
-                    return new Response('Expected Upgrade: websocket.', {status: 426});
+                    return new Response('Expected Upgrade: websocket.', { status: 426 });
                 }
 
                 return this.handleWebsocketUpgrade(request);
@@ -166,7 +173,7 @@ export class QuakeService {
             const url = new URL(request.url);
             switch (url.pathname) {
                 case '/session':
-                    return new Response('Expected Upgrade: websocket', {status: 426});
+                    return new Response('Expected Upgrade: websocket', { status: 426 });
                 case '/stats':
                     return jsonResponse(this.stats);
                 case '/quakes':
@@ -177,34 +184,26 @@ export class QuakeService {
                     this.cache.clear();
                     this.quakes = [];
                     await this.state.storage.delete('quakes');
-                    // const oldSessions = this.sessions;
-                    // this.sessions = [];
-                    // for (const session of oldSessions) {
-                    //     try {
-                    //         session.close();
-                    //     } catch (e) {
-                    //         console.error('Error while closing session', e.message);
-                    //     }
-                    // }
-                    return new Response('cache cleared', {status: 200});
+                    return new Response('cache cleared', { status: 200 });
             }
 
-            return new Response('not found', {status: 404});
+            return new Response('not found', { status: 404 });
         }
         catch (err) {
             console.error('failed to handle request');
             console.error(err.message);
-            return new Response('server failed', {status: 500});
+            return new Response('server failed', { status: 500 });
         }
     }
 
     async syncQuakes() {
         let updatedQuakes;
-        if (!this.lastQueryTime || !this.lastFullRefreshTime || this.env.FULL_REFRESH_INTERVAL_MINUTES * 60000 > Date.now() - this.lastFullRefreshTime) {
+        if (!this.lastQueryTime || !this.lastFullRefreshTime || this.env.FULL_REFRESH_INTERVAL_MINUTES * 60000 < Date.now() - this.lastFullRefreshTime.getTime()) {
             updatedQuakes = await this.queryAllQuakes();
             this.lastFullRefreshTime = new Date();
             await this.state.storage.put('last-full-refresh', this.lastFullRefreshTime.getTime());
-        } else {
+        }
+        else {
             updatedQuakes = await this.checkForNewQuakes();
         }
 
@@ -246,7 +245,8 @@ export class QuakeService {
             if (!cachedQuake) {
                 updatedQuakes.push(quake);
                 this.cacheQuake(quake);
-            } else if (!cachedQuake.equals(quake)) {
+            }
+            else if (!cachedQuake.equals(quake)) {
                 cachedQuake.update(quake);
                 updatedQuakes.push(cachedQuake);
             }
@@ -277,7 +277,8 @@ export class QuakeService {
             this.stopPollingQuake(quake, 'Earthquake was deleted.');
             this.syncRemovedQuakes([quake.id]);
             return;
-        } else if (!quake.equals(earthquake)) {
+        }
+        else if (!quake.equals(earthquake)) {
             quake.update(earthquake);
             this.syncUpdatedQuakes([quake]);
         }
@@ -302,7 +303,7 @@ export class QuakeService {
     }
 
     uncacheQuakesById(oldQuakeIds) {
-        for (const id in oldQuakeIds) {
+        for (const id of oldQuakeIds) {
             this.cache.delete(id);
         }
         this.quakes = this.quakes.filter(quake => !oldQuakeIds.includes(quake.id));
@@ -322,7 +323,8 @@ export class QuakeService {
         for (const quake of this.quakes) {
             if (quake.time.getTime() < recentPeriod) {
                 this.stopPollingQuake(quake, 'Outside polling period.');
-            } else if (quake.quality !== 'best' && quake.quality !== 'deleted') {
+            }
+            else if (quake.quality !== 'best' && quake.quality !== 'deleted') {
                 // only poll quakes that have not been reviewed
                 // best/deleted means quake has been reviewed
                 // quality property is set after querying the quake individually with refreshQuake()

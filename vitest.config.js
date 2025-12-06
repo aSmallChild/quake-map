@@ -9,11 +9,6 @@ export default defineConfig({
     plugins: [
         svelte({
             hot: !process.env.VITEST,
-            compilerOptions: {
-                // Ensure client-side compilation
-                generate: 'dom',
-                hydratable: false,
-            }
         })
     ],
     resolve: {
