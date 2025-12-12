@@ -1,14 +1,6 @@
-name = "quake-map"
-main = "worker/index.js"
+name = "quake-map-test"
 compatibility_date = "2024-01-01"
-
-[[durable_objects.bindings]]
-name = "QUAKE_SERVICE"
-class_name = "QuakeService"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["QuakeService"]
+pages_build_output_dir = "dist"
 
 [vars]
 MIN_MAGNITUDE = 3
@@ -18,11 +10,6 @@ GEONET_POLLING_INTERVAL_SECONDS = 45
 FULL_REFRESH_INTERVAL_MINUTES = 45
 RECENT_QUAKE_POLL_TIME_MINUTES = 20
 QUAKE_SEARCH_TIME_MINUTES = 10
-
-[triggers]
-crons = ['3/4 * * * *']
-
-pages_build_output_dir = "dist"
 
 [dev]
 port = 8787

@@ -1,0 +1,11 @@
+name = "quake-map-cron"
+main = "worker/cron.js"
+compatibility_date = "2024-01-01"
+
+[[durable_objects.bindings]]
+name = "QUAKE_SERVICE"
+class_name = "QuakeService"
+script_name = "quake-map"
+
+[triggers]
+crons = ['3/4 * * * *']
