@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "pages:dev": "wrangler pages dev dist --compatibility-date=2024-01-01 --do QUAKE_SERVICE=quake-service",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",

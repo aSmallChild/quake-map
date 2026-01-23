@@ -9,19 +9,11 @@
     "quake-shared"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
     "test": "npm --workspace quake-map run test",
-    "test:ui": "vitest --ui",
-    "pages:dev": "wrangler pages dev dist --compatibility-date=2024-01-01 --do QUAKE_SERVICE=quake-service",
-    "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=quake-map",
-    "worker:dev": "wrangler dev",
-    "worker:deploy": "wrangler deploy",
-    "dev:pages": "npm --workspace quake-map run dev",
-    "dev:worker": "npm --workspace quake-service run dev",
-    "deploy:pages": "npm --workspace quake-map run deploy",
-    "deploy:worker": "npm --workspace quake-service run deploy"
+    "pages:dev": "npm --workspace quake-map run pages:dev",
+    "pages:deploy": "npm --workspace quake-map run deploy",
+    "worker:dev": "npm --workspace quake-service run dev",
+    "worker:deploy": "npm --workspace quake-service run deploy"
   },
   "dependencies": {
     "svelte": "^5.45.5",
