@@ -76,13 +76,15 @@ export function connectSocket(host = import.meta.env.VITE_API_HOST) {
 }
 
 export function sendMessage(event, data) {
-    if (!socket) return false;
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        return false;
+    }
     try {
         socket.send(JSON.stringify([event, data]));
         lastMessageTime = Date.now();
         return true;
     } catch (err) {
-        console.error(err);
+        console.error('Failed to send message:', event, err);
     }
     return false;
 }
