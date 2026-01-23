@@ -1,5 +1,5 @@
-import {loadStyle, loadScript} from "./util.js";
-import QuakeMap from "./quake-map.js";
+import { loadScript, loadStyle } from './util.js';
+import QuakeMap from './quake-map.js';
 
 class LeafletQuakeMarker {
     constructor(map, config, colour) {
@@ -20,17 +20,23 @@ class LeafletQuakeMarker {
     }
 
     update(quake) {
+        if (!this.map || typeof L === 'undefined') {
+            return;
+        }
         const position = LeafletQuakeMarker.convertPosition(quake.lat, quake.long);
         if (this._marker) {
             this._marker.setLatLng(position);
             const style = this.buildStyle(quake)
             this._marker.setStyle(style);
             this._marker.setRadius(style.radius);
-        } else {
+        }
+        else {
             this._marker = L.circle(position, this.buildStyle(quake));
             this._marker.addTo(this.map);
         }
-        this._marker.off();
+        if (this._marker) {
+            this._marker.off();
+        }
     }
 
     buildStyle(quake) {
@@ -79,7 +85,7 @@ class LeafletQuakeMarker {
     set selected(isSelected) {
         this._selected = isSelected;
         if (this._marker) {
-            this._marker.setStyle({weight: this.getStrokeWeight()});
+            this._marker.setStyle({ weight: this.getStrokeWeight() });
         }
     }
 
@@ -92,15 +98,23 @@ class LeafletQuakeMarker {
     }
 
     set visible(visible) {
-        if (visible) this._marker.addTo(this.map);
-        else this._marker.remove();
+        if (!this._marker || !this.map) {
+            return;
+        }
+        if (visible) {
+            this._marker.addTo(this.map);
+        }
+        else {
+            this._marker.remove();
+        }
     }
 
     adjustMapZoomAndPosition(map, avgLat, avgLong, latRange, longRange) {
         let zoom = 6;
         if (latRange < 4 && longRange < 4) {
             zoom = 8;
-        } else if (latRange < 8 && longRange < 8) {
+        }
+        else if (latRange < 8 && longRange < 8) {
             zoom = 7;
         }
         map.setView(LeafletQuakeMarker.convertPosition(avgLat, avgLong), zoom);
@@ -119,13 +133,20 @@ class LeafletQuakeMarker {
     addEventListener(event, listener) {
         this._marker.on(event, listener);
     }
+
+    destroy() {
+        if (this._marker) {
+            this._marker.remove();
+            this._marker = null;
+        }
+    }
 }
 
 export default async function createLeafletMap(mapElement, accessToken, styleBuilder) {
     const mapReady = loadScript('//unpkg.com/leaflet@1.6.0/dist/leaflet.js');
     loadStyle('//unpkg.com/leaflet@1.6.0/dist/leaflet.css');
     await mapReady;
-    const map = L.map(mapElement, {zoomControl: false}).setView(LeafletQuakeMarker.convertPosition(-41.5, 174), 6);
+    const map = L.map(mapElement, { zoomControl: false }).setView(LeafletQuakeMarker.convertPosition(-41.5, 174), 6);
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{style}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>',

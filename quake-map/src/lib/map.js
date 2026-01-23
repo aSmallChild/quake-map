@@ -1,6 +1,6 @@
 import createGoogleMap from './map-google.js';
 import createLeafletMap from './map-leaflet.js';
-import {addSocketListener} from './client-socket-handler.js';
+import { addSocketListener } from './client-socket-handler.js';
 
 export async function createMap(mapContainer, quakeInfoContainer, styleBuilder, onMapCreated) {
     const quakeMap = await createMapType(mapContainer, styleBuilder);
@@ -8,7 +8,8 @@ export async function createMap(mapContainer, quakeInfoContainer, styleBuilder, 
     if (onMapCreated) {
         onMapCreated(quakeMap);
     }
-    addSocketListener((event, data) => quakeMap.on(event, data));
+    addSocketListener(quakeMap.socketListener);
+    return quakeMap;
 }
 
 function createMapType(mapContainer, styleBuilder) {

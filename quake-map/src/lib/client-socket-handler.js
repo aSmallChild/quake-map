@@ -2,10 +2,11 @@ const messageCallbacks = new Set();
 const reconnectMaxIntervalSeconds = 3600;
 const reconnectBackoffFactor = 1.5;
 const healthCheckTimeoutMs = 300000;
+const healthCheckIntervalMs = 45000;
 let reconnectAttempts = 0;
 let reconnectTimeout;
 let socket;
-let lastMessageTime;
+let lastMessageTime = 0;
 let healthCheckInterval;
 
 export function addSocketListener(onMessage) {
@@ -21,7 +22,7 @@ export function handleMessage(message) {
     const [event, data] = message;
     if (event === 'ping') {
         const now = Date.now();
-        sendMessage('pong', {then: data, now, diff: now - data});
+        sendMessage('pong', { then: data, now, diff: now - data });
         return;
     }
     if (event === 'pong') {
@@ -30,7 +31,8 @@ export function handleMessage(message) {
     for (const cb of messageCallbacks) {
         try {
             cb(event, data);
-        } catch (err) {
+        }
+        catch (err) {
             console.error('Error while handling message.');
             console.error(err);
         }
@@ -46,12 +48,12 @@ export function connectSocket(host = import.meta.env.VITE_API_HOST) {
         socket.addEventListener('open', () => {
             cancelReconnect();
             clearInterval(healthCheckInterval);
-            setInterval(() => {
+            healthCheckInterval = setInterval(() => {
                 const now = Date.now();
                 if (now - lastMessageTime > healthCheckTimeoutMs) {
                     sendMessage('ping', now);
                 }
-            }, healthCheckTimeoutMs);
+            }, healthCheckIntervalMs);
             handleMessage(['open', null]);
         });
         socket.addEventListener('message', event => {
@@ -69,7 +71,8 @@ export function connectSocket(host = import.meta.env.VITE_API_HOST) {
             reconnectSocket(host);
         });
         return true;
-    } catch (err) {
+    }
+    catch (err) {
         console.error('WS connection failed:', host, err);
         return false;
     }
@@ -83,7 +86,8 @@ export function sendMessage(event, data) {
         socket.send(JSON.stringify([event, data]));
         lastMessageTime = Date.now();
         return true;
-    } catch (err) {
+    }
+    catch (err) {
         console.error('Failed to send message:', event, err);
     }
     return false;
@@ -94,7 +98,8 @@ function disconnectSocket() {
         if (socket) {
             socket.close();
         }
-    } catch (err) {
+    }
+    catch (err) {
         console.error('error while closing socket', err);
     }
     socket = null;

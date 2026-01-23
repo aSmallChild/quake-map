@@ -1,19 +1,33 @@
 export function close(element) {
-    element.parentNode.removeChild(element);
+    if (element && element.parentNode) {
+        element.parentNode.removeChild(element);
+    }
 }
 
 export function shrinkOut(element) {
+    if (!element) {
+        return;
+    }
     element.classList.add('shrink_out');
     setTimeout(() => {
-        element.style.display = 'none';
-        element.classList.remove('shrink_out');
+        if (element) {
+            element.style.display = 'none';
+            element.classList.remove('shrink_out');
+        }
     }, 100);
 }
 
 export function shrinkIn(element) {
+    if (!element) {
+        return;
+    }
     element.classList.add('shrink_in');
     element.style.display = '';
-    setTimeout(() => element.classList.remove('shrink_in'), 100);
+    setTimeout(() => {
+        if (element) {
+            element.classList.remove('shrink_in');
+        }
+    }, 100);
 }
 
 export function getDateTimeString(date) {

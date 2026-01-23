@@ -1,5 +1,5 @@
-import {loadScript} from "./util.js";
-import QuakeMap from "./quake-map.js";
+import { loadScript } from './util.js';
+import QuakeMap from './quake-map.js';
 
 class GoogleQuakeMarker {
     constructor(map, config, colour) {
@@ -15,18 +15,24 @@ class GoogleQuakeMarker {
     }
 
     update(quake) {
+        if (!this.map || typeof google === 'undefined' || !google.maps) {
+            return;
+        }
         const position = new google.maps.LatLng(quake.lat, quake.long);
         if (this._marker) {
             this._marker.setPosition(position);
             this._marker.setIcon(this.buildIcon(quake));
-        } else {
+        }
+        else {
             this._marker = new google.maps.Marker({
                 position: position,
                 icon: this.buildIcon(quake),
                 map: this.map
             });
         }
-        google.maps.event.clearInstanceListeners(this._marker);
+        if (this._marker) {
+            google.maps.event.clearInstanceListeners(this._marker);
+        }
     }
 
     buildIcon(quake) {
@@ -91,15 +97,19 @@ class GoogleQuakeMarker {
     }
 
     set visible(visible) {
-        this.marker.setMap(visible ? this.map : null);
+        if (this._marker) {
+            this._marker.setMap(visible ? this.map : null);
+        }
     }
 
     adjustMapZoomAndPosition(map, avgLat, avgLong, latRange, longRange) {
         if (latRange < 4 && longRange < 4) {
             map.setZoom(8);
-        } else if (latRange < 8 && longRange < 8) {
+        }
+        else if (latRange < 8 && longRange < 8) {
             map.setZoom(7);
-        } else {
+        }
+        else {
             map.setZoom(6);
         }
         map.panTo(new google.maps.LatLng(avgLat, avgLong));
@@ -117,6 +127,14 @@ class GoogleQuakeMarker {
 
     addEventListener(event, listener) {
         this.marker.addListener(event, listener);
+    }
+
+    destroy() {
+        if (this._marker) {
+            google.maps.event.clearInstanceListeners(this._marker);
+            this._marker.setMap(null);
+            this._marker = null;
+        }
     }
 }
 

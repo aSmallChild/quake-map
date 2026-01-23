@@ -1,5 +1,5 @@
-import {shrinkIn, shrinkOut, close, getDateTimeString} from './util.js';
-import {Quake} from '@quake/shared';
+import { close, getDateTimeString, shrinkIn, shrinkOut } from './util.js';
+import { Quake } from '@quake/shared';
 
 class QuakeWrapper {
     constructor(quake, colour) {
@@ -20,8 +20,12 @@ class QuakeWrapper {
             this.visible = true;
         }
 
-        if (isSelected && !this.infoDiv.classList.contains('selected_quake')) this.infoDiv.classList.add('selected_quake');
-        else this.infoDiv.classList.remove('selected_quake');
+        if (isSelected && !this.infoDiv.classList.contains('selected_quake')) {
+            this.infoDiv.classList.add('selected_quake');
+        }
+        else {
+            this.infoDiv.classList.remove('selected_quake');
+        }
     }
 
     get selected() {
@@ -56,21 +60,37 @@ class QuakeWrapper {
             shrinkOut(this.infoDiv);
         });
 
-        if (this.quake.recent) this.infoDiv.classList.add('recent_quake');
-        else this.infoDiv.classList.remove('recent_quake');
+        if (this.quake.recent) {
+            this.infoDiv.classList.add('recent_quake');
+        }
+        else {
+            this.infoDiv.classList.remove('recent_quake');
+        }
     }
 
     set infoVisible(visible) {
-        if (visible) shrinkIn(this.infoDiv);
-        else shrinkOut(this.infoDiv);
+        if (visible) {
+            shrinkIn(this.infoDiv);
+        }
+        else {
+            shrinkOut(this.infoDiv);
+        }
     }
 
     update() {
-        this.marker.update(this.quake);
+        if (this.marker) {
+            this.marker.update(this.quake);
+        }
+        if (!this.infoDiv) {
+            return;
+        }
+
         const newDiv = this.infoDiv.cloneNode(true);
-        this.infoDiv.parentNode.replaceChild(newDiv, this.infoDiv);
-        this.infoDiv = newDiv;
-        this.updateInfoDiv(this.quake);
+        if (this.infoDiv.parentNode) {
+            this.infoDiv.parentNode.replaceChild(newDiv, this.infoDiv);
+            this.infoDiv = newDiv;
+            this.updateInfoDiv(this.quake);
+        }
     }
 }
 
@@ -84,6 +104,14 @@ export default class QuakeMap {
             list: ['#F90', '#F0F', '#06F', '#F9F', '#F60', '#60F', '#960', '#FF0', '#090', '#00F', '#AEF', '#C30', '#009', '#66F', '#93F', '#F00', '#606'],
             next_index: 0,
         };
+        this.socketListener = (event, data) => this.on(event, data);
+    }
+
+    destroy() {
+        for (const marker of this.markers) {
+            marker.destroy();
+        }
+        this.markers = [];
     }
 
     setQuakeInfoContainer(quakeInfoContainer) {
@@ -194,7 +222,8 @@ export default class QuakeMap {
         let marker = this.markers.find(m => m.id === quakeData.id);
         if (marker) {
             marker.quake.update(quakeData);
-        } else {
+        }
+        else {
             const quake = Quake.fromJSON(quakeData);
             quake.recent = (this.config?.highlight_quakes_within ?? 5) * 60000;
             marker = new QuakeWrapper(quake, this.getNextColour());
@@ -205,7 +234,9 @@ export default class QuakeMap {
         marker.update();
         marker.marker.addEventListener('click', () => {
             for (const otherMarker of this.markers) {
-                if (otherMarker === marker) continue;
+                if (otherMarker === marker) {
+                    continue;
+                }
 
                 otherMarker.selected = false;
                 if (!otherMarker.quake.recent) {
