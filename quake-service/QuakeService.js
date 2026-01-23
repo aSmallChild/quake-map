@@ -1,4 +1,4 @@
-import Quake from '../src/lib/quake.js';
+import { Quake } from '@quake/shared';
 import { getQuake, searchQuakes } from './geonet-api.js';
 
 const sessionHealthCheckIntervalMs = 600000;
@@ -272,7 +272,7 @@ export class QuakeService {
             return;
         }
 
-        if (earthquake.quality == 'deleted') {
+        if (earthquake.quality === 'deleted') {
             this.uncacheQuake(quake);
             this.stopPollingQuake(quake, 'Earthquake was deleted.');
             this.syncRemovedQuakes([quake.id]);
@@ -283,7 +283,7 @@ export class QuakeService {
             this.syncUpdatedQuakes([quake]);
         }
 
-        if (quake.quality == 'best') {
+        if (quake.quality === 'best') {
             this.stopPollingQuake(quake, 'Best quality/reviewed.');
         }
     }
@@ -299,7 +299,7 @@ export class QuakeService {
 
     uncacheQuake(quakeToRemove) {
         this.cache.delete(quakeToRemove.id);
-        this.quakes = this.quakes.filter(quake => quake.id != quakeToRemove.id);
+        this.quakes = this.quakes.filter(quake => quake.id !== quakeToRemove.id);
     }
 
     uncacheQuakesById(oldQuakeIds) {

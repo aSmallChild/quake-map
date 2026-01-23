@@ -1,6 +1,6 @@
 const updatableFields = ['long', 'lat', 'mag', 'depth', 'time', 'modified', 'quality'];
 
-export default class Quake {
+export class Quake {
     #id;
     #time;
     #recentForSeconds = 300;
@@ -38,7 +38,7 @@ export default class Quake {
     }
 
     equals(that) {
-        if (this.id != that.id) {
+        if (this.id !== that.id) {
             return false;
         }
         for (const field of updatableFields) {
@@ -46,12 +46,12 @@ export default class Quake {
                 continue;
             }
 
-            if (field == 'time') {
-                if (!this.time || this.time.getTime() != that.time.getTime()) {
+            if (field === 'time') {
+                if (!this.time || this.time.getTime() !== that.time.getTime()) {
                     return false;
                 }
             }
-            else if (this[field] != that[field]) {
+            else if (this[field] !== that[field]) {
                 return false;
             }
         }
@@ -60,7 +60,7 @@ export default class Quake {
 
     update(that) {
         for (const field of updatableFields) {
-            if (that[field] !== null && this[field] != that[field]) {
+            if (that[field] !== null && this[field] !== that[field]) {
                 this[field] = that[field];
             }
         }

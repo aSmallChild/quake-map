@@ -61,12 +61,12 @@ class GoogleQuakeMarker {
 
         let green = Math.trunc(Math.abs((1 - mag / maxMag) * 255));
         green = (green > 255 ? 255 : green).toString(16);
-        if (green.length == 1) {
+        if (green.length === 1) {
             green = '0' + green;
         }
         let red = Math.trunc(mag / maxMag * 255);
         red = (red > 255 ? 255 : red).toString(16);
-        if (red.length == 1) {
+        if (red.length === 1) {
             red = '0' + red;
         }
 

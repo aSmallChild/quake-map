@@ -13,7 +13,7 @@
         });
 
         addSocketListener(event => {
-            if (event == 'open') {
+            if (event === 'open') {
                 sendMessage('sync');
             }
         });

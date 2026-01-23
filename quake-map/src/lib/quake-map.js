@@ -1,5 +1,5 @@
 import {shrinkIn, shrinkOut, close, getDateTimeString} from './util.js';
-import Quake from './quake.js';
+import {Quake} from '@quake/shared';
 
 class QuakeWrapper {
     constructor(quake, colour) {
@@ -191,7 +191,7 @@ export default class QuakeMap {
     }
 
     addQuakeData(quakeData) {
-        let marker = this.markers.find(m => m.id == quakeData.id);
+        let marker = this.markers.find(m => m.id === quakeData.id);
         if (marker) {
             marker.quake.update(quakeData);
         } else {
@@ -205,7 +205,7 @@ export default class QuakeMap {
         marker.update();
         marker.marker.addEventListener('click', () => {
             for (const otherMarker of this.markers) {
-                if (otherMarker == marker) continue;
+                if (otherMarker === marker) continue;
 
                 otherMarker.selected = false;
                 if (!otherMarker.quake.recent) {
@@ -236,7 +236,7 @@ export default class QuakeMap {
 
     hideAllMarkersExcept(excludedId) {
         for (const marker of this.markers) {
-            if (marker.id != excludedId) {
+            if (marker.id !== excludedId) {
                 marker.marker.visible = false;
             }
         }

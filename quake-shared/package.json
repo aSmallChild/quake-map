@@ -1,0 +1,13 @@
+{
+  "name": "@quake/shared",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "build": "echo 'no build step yet'",
+    "test": "echo 'no tests yet'"
+  }
+}

@@ -1,0 +1,20 @@
+name = "quake-map"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+[vars]
+MIN_MAGNITUDE = 3
+MAX_DEPTH_KM = 300
+QUAKE_CACHE_TTL_DAYS = 2
+GEONET_POLLING_INTERVAL_SECONDS = 45
+FULL_REFRESH_INTERVAL_MINUTES = 45
+RECENT_QUAKE_POLL_TIME_MINUTES = 20
+QUAKE_SEARCH_TIME_MINUTES = 10
+
+[dev]
+port = 8787
+
+[[durable_objects.bindings]]
+name = "QUAKE_SERVICE"
+script_name = "quake-service"
+class_name = "QuakeService"

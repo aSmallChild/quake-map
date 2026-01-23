@@ -1,4 +1,4 @@
-import Quake from '../src/lib/quake.js';
+import { Quake } from '@quake/shared';
 
 test('Quake.equals()', () => {
     for (let i = 0; i < 100; i++) {

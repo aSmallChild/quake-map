@@ -19,12 +19,12 @@ export function removeSocketListener(onMessage) {
 
 export function handleMessage(message) {
     const [event, data] = message;
-    if (event == 'ping') {
+    if (event === 'ping') {
         const now = Date.now();
         sendMessage('pong', {then: data, now, diff: now - data});
         return;
     }
-    if (event == 'pong') {
+    if (event === 'pong') {
         return;
     }
     for (const cb of messageCallbacks) {

@@ -1,4 +1,4 @@
-import Quake from '../src/lib/quake.js';
+import { Quake } from '@quake/shared';
 
 const urlQuakeSearch = 'https://quakesearch.geonet.org.nz/geojson';
 const urlQuakePage = 'https://www.geonet.org.nz/earthquake/';

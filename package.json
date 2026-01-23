@@ -3,16 +3,25 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "quake-map",
+    "quake-service",
+    "quake-shared"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "npm --workspace quake-map run test",
     "test:ui": "vitest --ui",
-    "pages:dev": "wrangler pages dev dist --compatibility-date=2024-01-01 --do QUAKE_SERVICE=QuakeService",
+    "pages:dev": "wrangler pages dev dist --compatibility-date=2024-01-01 --do QUAKE_SERVICE=quake-service",
     "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=quake-map",
     "worker:dev": "wrangler dev",
-    "worker:deploy": "wrangler deploy"
+    "worker:deploy": "wrangler deploy",
+    "dev:pages": "npm --workspace quake-map run dev",
+    "dev:worker": "npm --workspace quake-service run dev",
+    "deploy:pages": "npm --workspace quake-map run deploy",
+    "deploy:worker": "npm --workspace quake-service run deploy"
   },
   "dependencies": {
     "svelte": "^5.45.5",
@@ -26,6 +35,6 @@
     "sass": "^1.94.2",
     "vite": "^6.4.1",
     "vitest": "^4.0.15",
-    "wrangler": "^4.53.0"
+    "wrangler": "^4.59.1"
   }
 }
